@@ -1,0 +1,203 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/content_detalhe_visita"
+    android:layout_height="fill_parent"
+    android:layout_width="match_parent"
+    android:padding="0dp"
+    android:orientation="vertical"
+    android:background="#4099FF"
+    android:layout_alignParentTop="true"
+    app:layout_behavior="@string/appbar_scrolling_view_behavior"
+    tools:context="com.leandrobororo.visitapp.DetalheVisitaActivity"
+    tools:showIn="@layout/activity_detalhe_visita">
+
+    <ProgressBar
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:visibility="gone"
+        android:id="@+id/progressDetalhe" />
+
+    <ImageView
+        android:layout_width="match_parent"
+        android:layout_height="fill_parent"
+        android:scaleType="fitXY"
+        android:layout_weight="2"
+        android:layout_marginTop="5dp"
+        android:layout_marginLeft="5dp"
+        android:layout_marginRight="5dp"
+        android:src="@android:drawable/ic_menu_camera"
+        android:id="@+id/imgDetalheGooglePlace"/>
+
+    <LinearLayout
+        android:id="@+id/LinearLayoutBottom"
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="fill_parent"
+        android:layout_weight="1"
+        android:background="#FFFFFF"
+        android:layout_marginLeft="5dp"
+        android:layout_marginRight="5dp"
+        android:layout_marginBottom="5dp"
+        android:layout_marginTop="5dp">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="5dp"
+            android:text="Nome do google place"
+            android:textSize="12sp"
+            android:textStyle="bold"
+            android:textColor="#000000"
+            android:id="@+id/txtDescricaoPlace"/>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="5dp"
+            android:text="Endereço do google place"
+            android:textSize="12sp"
+            android:textStyle="bold"
+            android:textColor="#000000"
+            android:id="@+id/txtEnderecoPlace"/>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="5dp"
+            android:layout_marginLeft="5dp"
+            android:text="Detalhe da visita ao google place"
+            android:textSize="12sp"
+            android:textStyle="bold"
+            android:textColor="#000000"
+            android:id="@+id/txtHorarioVisita"/>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="100dp"
+            android:layout_marginTop="5dp"
+            android:layout_marginBottom="5dp"
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="10dp"
+            android:orientation="vertical"
+            android:background="@drawable/layout_border">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="5dp"
+                android:layout_marginTop="5dp"
+                android:text="Previsão do tempo"
+                android:textSize="12sp"
+                android:textColor="#000000"
+                android:id="@+id/txtTituloPrevisao"/>
+
+            <LinearLayout
+                android:orientation="horizontal"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="5dp"
+                android:layout_marginLeft="5dp">
+
+                <LinearLayout
+                    android:layout_width="fill_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical"
+                    android:layout_weight="1">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Parcialmente nublado"
+                        android:textSize="10sp"
+                        android:textColor="#000000"
+                        android:id="@+id/txtPrevisao"/>
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Mínima: 10°"
+                        android:textSize="10sp"
+                        android:textColor="#000000"
+                        android:id="@+id/txtTempMinima"/>
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Máxima: 25°"
+                        android:textSize="10sp"
+                        android:textColor="#000000"
+                        android:id="@+id/txtTempMaxima"/>
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Chuva: 60%"
+                        android:textSize="10sp"
+                        android:textColor="#000000"
+                        android:id="@+id/txtChuva"/>
+
+                </LinearLayout>
+
+                <ImageView
+                    android:layout_width="fill_parent"
+                    android:layout_height="match_parent"
+                    android:scaleType="fitCenter"
+                    android:layout_weight="2"
+                    android:layout_marginBottom="10dp"
+                    android:layout_marginRight="10dp"
+                    android:src="@android:drawable/ic_menu_camera"
+                    android:id="@+id/imgPrevisao"/>
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="5dp"
+            android:text=". 0 pessoas visitarão o local neste dia"
+            android:textSize="12sp"
+            android:textStyle="bold"
+            android:textColor="#000000"
+            android:id="@+id/txtVisitantesPlaceDia"/>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="5dp"
+            android:text=". 0 pessoas visitarão o local durante a sua visita"
+            android:textSize="12sp"
+            android:textStyle="bold"
+            android:textColor="#000000"
+            android:id="@+id/txtVisitantesPlaceMomento"/>
+
+        <Button
+            android:layout_height="30dp"
+            android:layout_width="200dp"
+            android:layout_gravity="center"
+            android:layout_marginTop="5dp"
+            android:id="@+id/buttonAmigos"
+            android:text="Amigos que visitarão o local"
+            android:background="@drawable/button_border"
+            android:textColor="#FFFFFF"
+            android:textSize="12sp"/>
+
+        <Button
+            android:layout_height="30dp"
+            android:layout_width="200dp"
+            android:layout_gravity="center"
+            android:layout_marginTop="5dp"
+            android:id="@+id/buttonEstacionamento"
+            android:text="Estacionamentos vizinhos"
+            android:background="@drawable/button_border"
+            android:textColor="#FFFFFF"
+            android:textSize="12sp"/>
+
+
+    </LinearLayout>
+
+</LinearLayout>

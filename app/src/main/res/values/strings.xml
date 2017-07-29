@@ -1,0 +1,10 @@
+<resources>
+    <string name="facebook_app_id">791906550963665</string>
+    <string name="app_name">VisitApp</string>
+    <string name="title_activity_base">VisitApp</string>
+    <string name="title_activity_detalhe_visita">VisitApp</string>
+    <string name="title_activity_amigos">VisitApp</string>
+    <string name="action_configuracoes">Configurações</string>
+    <string name="action_sair">Sair</string>
+    <string name="data_da_visita">Data da visita:</string>
+</resources>
