@@ -7,6 +7,8 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.CoordinatorLayout;
@@ -26,6 +28,10 @@ import android.widget.ProgressBar;
 import android.widget.TimePicker;
 import android.widget.Toast;
 
+import com.baoyz.swipemenulistview.SwipeMenu;
+import com.baoyz.swipemenulistview.SwipeMenuCreator;
+import com.baoyz.swipemenulistview.SwipeMenuItem;
+import com.baoyz.swipemenulistview.SwipeMenuListView;
 import com.facebook.Profile;
 import com.facebook.login.LoginManager;
 import com.google.android.gms.common.GooglePlayServicesNotAvailableException;
@@ -39,14 +45,15 @@ import com.google.android.gms.location.places.PlacePhotoMetadataResult;
 import com.google.android.gms.location.places.PlacePhotoResult;
 import com.google.android.gms.location.places.Places;
 import com.google.android.gms.location.places.ui.PlacePicker;
-import com.leandrobororo.visitapp.model.RetornoAPIVisitas;
+import com.leandrobororo.visitapp.adapters.AdapterListVisitas;
 import com.leandrobororo.visitapp.model.Visita;
+import com.leandrobororo.visitapp.services.APIBackendVisitasService;
+import com.leandrobororo.visitapp.util.Util;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 
@@ -58,12 +65,12 @@ import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
 import static android.content.DialogInterface.BUTTON_NEGATIVE;
-import static com.leandrobororo.visitapp.Util.CANCELAR;
-import static com.leandrobororo.visitapp.Util.DESEJA_ACOMPANHAR_PLANOS_DE_VISITA_DE_AMIGOS_AO_MESMO_LOCAL;
-import static com.leandrobororo.visitapp.Util.NAO;
-import static com.leandrobororo.visitapp.Util.REGISTRO_CANCELADO;
-import static com.leandrobororo.visitapp.Util.SIM;
-import static com.leandrobororo.visitapp.Util.gerarDataVisita;
+import static com.leandrobororo.visitapp.util.Util.CANCELAR;
+import static com.leandrobororo.visitapp.util.Util.DESEJA_ACOMPANHAR_PLANOS_DE_VISITA_DE_AMIGOS_AO_MESMO_LOCAL;
+import static com.leandrobororo.visitapp.util.Util.NAO;
+import static com.leandrobororo.visitapp.util.Util.REGISTRO_CANCELADO;
+import static com.leandrobororo.visitapp.util.Util.SIM;
+import static com.leandrobororo.visitapp.util.Util.gerarDataVisita;
 import static java.util.Calendar.DAY_OF_MONTH;
 import static java.util.Calendar.MONTH;
 import static java.util.Calendar.YEAR;
@@ -73,11 +80,10 @@ public class BaseActivity extends AppCompatActivity {
     private static final int PLACE_PICKER_REQUEST = 1;
     private final Context context = this;
     private static GoogleApiClient mGoogleApiClient;
-    private APIVisitasService visitasService;
     private APIBackendVisitasService visitasBackendService;
     private Profile profile;
     private AdapterListVisitas adapter;
-    private ListView listVisitas;
+    private SwipeMenuListView listVisitas;
     private CoordinatorLayout coordinatorLayout;
     private ProgressBar progress;
 
@@ -122,9 +128,83 @@ public class BaseActivity extends AppCompatActivity {
     }
 
     private void obterReferenciasParaComponentesDaActivity() {
-        listVisitas = (ListView) findViewById(R.id.listVisitas);
+        listVisitas = (SwipeMenuListView) findViewById(R.id.listVisitas);
+
+        SwipeMenuCreator creator = new SwipeMenuCreator() {
+
+            @Override
+            public void create(SwipeMenu menu) {
+                // create "open" item
+                SwipeMenuItem openItem = new SwipeMenuItem(getApplicationContext());
+                openItem.setBackground(new ColorDrawable(Color.rgb(0xC9, 0xC9, 0xCE)));
+                openItem.setWidth(dp2px(90));
+
+                // set item title
+                openItem.setTitle("Abrir");
+                openItem.setTitleSize(18);
+                openItem.setTitleColor(Color.WHITE);
+
+                // add to menu
+                menu.addMenuItem(openItem);
+
+                // create "delete" item
+                SwipeMenuItem deleteItem = new SwipeMenuItem(getApplicationContext());
+                deleteItem.setBackground(new ColorDrawable(Color.rgb(0xF9, 0x3F, 0x25)));
+                deleteItem.setWidth(dp2px(90));
+
+                // set item title
+                deleteItem.setTitle("Excluir");
+                deleteItem.setTitleSize(18);
+                deleteItem.setTitleColor(Color.WHITE);
+
+                menu.addMenuItem(deleteItem);
+            }
+        };
+
+        // set creator
+        listVisitas.setMenuCreator(creator);
+
+        listVisitas.setOnMenuItemClickListener(new SwipeMenuListView.OnMenuItemClickListener() {
+            @Override
+            public boolean onMenuItemClick(final int position, SwipeMenu menu, int index) {
+                switch (index) {
+                    case 0:
+                        Intent it = new Intent(context, DetalheVisitaActivity.class);
+                        it.putExtra("visita", (Visita) adapter.getItem(position));
+                        startActivity(it);
+
+                        break;
+                    case 1:
+                        AlertDialog.Builder builder = new AlertDialog.Builder(context);
+                        builder.setMessage("Deseja excluir a visita ?");
+
+                        builder.setPositiveButton("Sim", new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface arg0, int arg1) {
+                                ((BaseActivity)context).callDeleteVisita((Visita) adapter.getItem(position));
+                            }
+                        });
+
+                        builder.setNegativeButton("Não", null);
+
+                        AlertDialog alerta = builder.create();
+                        alerta.show();
+
+                        break;
+                }
+
+                return false;
+            }
+        });
+
+
         progress = (ProgressBar) findViewById(R.id.progress);
         coordinatorLayout = (CoordinatorLayout) findViewById(R.id.coordinatorLayout);
+    }
+
+    private int dp2px(int dp) {
+        float scale = getResources().getDisplayMetrics().density;
+        int pixels = (int) (dp * scale + 0.5f);
+        return pixels;
     }
 
     private void instanciarGoogleAPIClient() {
@@ -135,13 +215,6 @@ public class BaseActivity extends AppCompatActivity {
     }
 
     private void instanciarVisitasService() {
-        final Retrofit retrofit = new Retrofit.Builder()
-                .baseUrl(APIVisitasService.BASE_URL)
-                .addConverterFactory(GsonConverterFactory.create())
-                .build();
-
-        visitasService = retrofit.create(APIVisitasService.class);
-
         final Retrofit retrofit2 = new Retrofit.Builder()
                 .baseUrl(APIBackendVisitasService.BASE_URL)
                 .addConverterFactory(GsonConverterFactory.create())
@@ -183,7 +256,7 @@ public class BaseActivity extends AppCompatActivity {
                         }
                     });
                 } else {
-                    showSnackBarTentarDeNovoGetVisitas("Erro: " +  " "  + response.code() +" " +  response.message());
+                    showSnackBarTentarDeNovoGetVisitas("Erro: " +  " "  + response.code() +  " " +  response.message());
                 }
                 progress.setVisibility(View.GONE);
             }
@@ -196,6 +269,77 @@ public class BaseActivity extends AppCompatActivity {
             }
 
         });
+    }
+
+    private void callSalvarVisita(final Visita visita) {
+        visita.setIdFacebook(profile.getId());
+
+        progress.setVisibility(View.VISIBLE);
+
+        Call<ResponseBody> call = visitasBackendService.salvarVisita(visita);
+        call.enqueue(new Callback<ResponseBody>() {
+            @Override
+            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                progress.setVisibility(View.GONE);
+                if (response.isSuccessful()){
+                    callGetVisitas();
+                } else {
+                    showSnackBarTentarDeNovoSaveVisita("Erro: " +  " "  + response.code() +  " " +  response.message(), visita);
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ResponseBody> call, Throwable t) {
+                progress.setVisibility(View.GONE);
+                showSnackBarTentarDeNovoSaveVisita("Falha: " + t.getMessage(), visita);
+            }
+
+        });
+    }
+
+    private void callDeleteVisita(final Visita visita) {
+        progress.setVisibility(View.VISIBLE);
+
+        Call<ResponseBody> call = visitasBackendService.deleteVisita(visita.getObjectId());
+        call.enqueue(new Callback<ResponseBody>() {
+            @Override
+            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                progress.setVisibility(View.GONE);
+                if (response.isSuccessful()){
+                    callGetVisitas();
+                }else{
+                    showSnackBarTentarDeNovoDeleteVisita("Erro: " +  " "  + response.code() +  " " +  response.message(), visita);
+                }
+            }
+
+
+            @Override
+            public void onFailure(Call<ResponseBody> call, Throwable t) {
+                progress.setVisibility(View.GONE);
+                showSnackBarTentarDeNovoDeleteVisita("Falha: " + t.getMessage(), visita);
+            }
+
+        });
+    }
+
+    private void showSnackBarTentarDeNovoDeleteVisita(String msg, final Visita visita){
+        Snackbar.make(coordinatorLayout, msg, Snackbar.LENGTH_INDEFINITE)
+                .setAction("Tentar", new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        callDeleteVisita(visita);
+                    }
+                }).show();
+    }
+
+    private void showSnackBarTentarDeNovoSaveVisita(String msg, final Visita visita){
+        Snackbar.make(coordinatorLayout, msg, Snackbar.LENGTH_INDEFINITE)
+                .setAction("Tentar", new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        callSalvarVisita(visita);
+                    }
+                }).show();
     }
 
     private void showSnackBarTentarDeNovoGetVisitas(String msg){
@@ -323,29 +467,6 @@ public class BaseActivity extends AppCompatActivity {
         AlertDialog alerta = builder.create();
         alerta.show();
 
-    }
-
-    private void callSalvarVisita(Visita visita) {
-        visita.setIdFacebook(profile.getId());
-
-        Call<ResponseBody> call = visitasBackendService.salvarVisita(visita);
-        call.enqueue(new Callback<ResponseBody>() {
-            @Override
-            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
-                if (response.code() == 201){
-                    callGetVisitas();
-                } else {
-                    makeToast(Util.NAO_FOI_POSSIVEL_SALVAR_A_VISITA);
-                }
-            }
-
-            @Override
-            public void onFailure(Call<ResponseBody> call, Throwable t) {
-                makeToast(Util.OCORREU_UM_ERRO_AO_ACESSAR_O_SERVICO);
-
-            }
-
-        });
     }
 
     @Override

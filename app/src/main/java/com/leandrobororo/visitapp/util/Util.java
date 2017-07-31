@@ -1,4 +1,4 @@
-package com.leandrobororo.visitapp;
+package com.leandrobororo.visitapp.util;
 
 import android.support.annotation.NonNull;
 

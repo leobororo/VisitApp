@@ -6,7 +6,6 @@ import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
-import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
@@ -20,10 +19,12 @@ import com.facebook.AccessToken;
 import com.facebook.GraphRequest;
 import com.facebook.GraphResponse;
 import com.facebook.HttpMethod;
-import com.leandrobororo.visitapp.model.RetornoAPIVisitas;
+import com.leandrobororo.visitapp.model.MatchingVisits;
 import com.leandrobororo.visitapp.model.Previsao;
 import com.leandrobororo.visitapp.model.RetornoCallWeather;
 import com.leandrobororo.visitapp.model.Visita;
+import com.leandrobororo.visitapp.services.APIBackendVisitasService;
+import com.leandrobororo.visitapp.services.APIWeatherService;
 import com.squareup.picasso.Picasso;
 
 import org.json.JSONArray;
@@ -34,7 +35,12 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -45,10 +51,10 @@ import retrofit2.converter.gson.GsonConverterFactory;
 import com.leandrobororo.visitapp.model.Amigo;
 
 import static android.view.View.GONE;
-import static com.leandrobororo.visitapp.Util.extrairDiaMesAnoStringDataVisita;
-import static com.leandrobororo.visitapp.Util.getDiaOuNoite;
-import static com.leandrobororo.visitapp.Util.somaUmaHoraMeia;
-import static com.leandrobororo.visitapp.Util.subtraiUmaHoraMeia;
+import static com.leandrobororo.visitapp.util.Util.extrairDiaMesAnoStringDataVisita;
+import static com.leandrobororo.visitapp.util.Util.getDiaOuNoite;
+import static com.leandrobororo.visitapp.util.Util.somaUmaHoraMeia;
+import static com.leandrobororo.visitapp.util.Util.subtraiUmaHoraMeia;
 import static java.lang.Character.toUpperCase;
 import static java.lang.String.format;
 
@@ -56,11 +62,9 @@ public class DetalheVisitaActivity extends AppCompatActivity {
 
     private DetalheVisitaActivity context = this;
     private APIWeatherService apiWeatherService;
-    private APIVisitasService apiVisitasService;
+    private APIBackendVisitasService backendService;
     private ProgressBar progress;
-    private ArrayList<Amigo> amigos;
-    private int numeroAmigosDia;
-    private int numeroAmigosMomento;
+    private Set<Amigo> amigosMesmoDia;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -91,9 +95,7 @@ public class DetalheVisitaActivity extends AppCompatActivity {
     }
 
     private void resetContagemAmigosEListaAmigos() {
-        numeroAmigosDia = 0;
-        numeroAmigosMomento = 0;
-        amigos = new ArrayList<Amigo>();
+
     }
 
     @NonNull
@@ -115,6 +117,12 @@ public class DetalheVisitaActivity extends AppCompatActivity {
 
             @Override
             public void onClick(View v) {
+                ArrayList<Amigo> amigos = new ArrayList<Amigo>();
+
+                if (amigosMesmoDia != null) {
+                    amigos.addAll(amigosMesmoDia);
+                }
+
                 Intent it = new Intent(context, AmigosActivity.class);
                 it.putExtra("amigos", amigos);
                 it.putExtra("visita", visita);
@@ -139,11 +147,11 @@ public class DetalheVisitaActivity extends AppCompatActivity {
 
     private void instanciarAPIVisitasService() {
         Retrofit retrofit = new Retrofit.Builder()
-                .baseUrl(APIVisitasService.BASE_URL)
+                .baseUrl(APIBackendVisitasService.BASE_URL)
                 .addConverterFactory(GsonConverterFactory.create())
                 .build();
 
-        apiVisitasService = retrofit.create(APIVisitasService.class);
+        backendService = retrofit.create(APIBackendVisitasService.class);
     }
 
     private void instanciarAPIWeatherService() {
@@ -172,15 +180,17 @@ public class DetalheVisitaActivity extends AppCompatActivity {
                 new GraphRequest.Callback() {
                     public void onCompleted(GraphResponse response) {
                         try {
-                            JSONArray amigos = (JSONArray) response.getJSONObject().get("data");
+                            JSONArray jsonArray = (JSONArray) response.getJSONObject().get("data");
 
-                            java.util.List<String> ids = new ArrayList<String>();
-                            for (int i = 0; i < amigos.length(); i ++) {
-                                JSONObject amigo = (JSONObject) amigos.get(i);
-                                callAtualizarContagemAmigos((String)amigo.get("id"), (String)amigo.get("name"), visita);
+                            Map<String, String> mapIdName = new HashMap<>();
+                            for (int i = 0; i < jsonArray.length(); i ++) {
+                                JSONObject amigo = (JSONObject) jsonArray.get(i);
+                                mapIdName.put((String)amigo.get("id"), (String)amigo.get("name"));
                             }
 
-                            if (amigos.length() == 0) {
+                            callAtualizarContagemAmigos(mapIdName, visita);
+
+                            if (jsonArray.length() == 0) {
                                 progress.setVisibility(GONE);
                             }
                         } catch (JSONException e) {
@@ -222,41 +232,48 @@ public class DetalheVisitaActivity extends AppCompatActivity {
         });
     }
 
-    private void callAtualizarContagemAmigos(final String idFacebook, final String nome, final Visita visita) {
-        Call<RetornoAPIVisitas> call = apiVisitasService.getVisitas();
+    private void callAtualizarContagemAmigos(final Map<String, String> mapIdName, final Visita visita) {
 
-        call.enqueue(new Callback<RetornoAPIVisitas>() {
+        StringBuffer ids = new StringBuffer();
+        for (Map.Entry<String, String> entry : mapIdName.entrySet()) {
+            ids.append(entry.getKey() + ",");
+        }
+
+        Call<MatchingVisits> call = backendService.getMatchingVisits(ids.toString(), visita.getPlaceId(), visita.getDataVisita(), visita.getHoraInicioVisita(), visita.getHoraFimVisita());
+
+        call.enqueue(new Callback<MatchingVisits>() {
             @Override
-            public void onResponse(Call<RetornoAPIVisitas> call, Response<RetornoAPIVisitas> response) {
+            public void onResponse(Call<MatchingVisits> call, Response<MatchingVisits> response) {
                 if (response.isSuccessful()){
 
-                    final RetornoAPIVisitas retornoCallWeather = response.body();
+                    final MatchingVisits matchingVisits = response.body();
 
-                    Amigo amigo;
-                    for (Visita visitaAux : retornoCallWeather.getResults()) {
-                        if (mesmoUsuarioPlaceData(visitaAux, visita, idFacebook)) {
-                            numeroAmigosDia++;
+                    if (!matchingVisits.getSameDayVisits().isEmpty()) {
+                        amigosMesmoDia = new HashSet<Amigo>();
+                        Set<Amigo> amigosMesmoMomento = new HashSet<Amigo>();
 
-                            amigo = new Amigo();
-                            amigo.setNome(nome);
-                            amigo.setId(idFacebook);
-                            amigo.setVisita(visitaAux);
-                            amigos.add(amigo);
+                        for (Visita visita : matchingVisits.getSameDayVisits()) {
+                            Amigo amigo = new Amigo();
+                            amigo.setNome(mapIdName.get(visita.getIdFacebook()));
+                            amigo.setVisita(visita);
 
-                            if ((visita.getHorarioInicio().compareTo(visitaAux.getHorarioInicio()) >= 0 && visita.getHorarioInicio().compareTo(visitaAux.getHorarioFim()) <= 0)
-                                    ||
-                                    (visita.getHorarioFim().compareTo(visitaAux.getHorarioInicio()) >= 0 && visita.getHorarioFim().compareTo(visitaAux.getHorarioFim()) <= 0)){
-                                numeroAmigosMomento++;
-                            }
-
-                            TextView txtVisitantesDia = (TextView) findViewById(R.id.txtVisitantesPlaceDia);
-                            txtVisitantesDia.setText(". "+ numeroAmigosDia + " pessoas visitarão o local neste dia");
-
-                            TextView txtVisitantesMomento = (TextView) findViewById(R.id.txtVisitantesPlaceMomento);
-                            txtVisitantesMomento.setText(". "+ numeroAmigosMomento + " pessoas visitarão o local durante a sua visita");
-
-                            break;
+                            amigosMesmoDia.add(amigo);
                         }
+
+                        for (Visita visita : matchingVisits.getSameTimeVisits()) {
+                            Amigo amigo = new Amigo();
+                            amigo.setNome(mapIdName.get(visita.getIdFacebook()));
+                            amigo.setVisita(visita);
+
+                            amigosMesmoMomento.add(amigo);
+                        }
+
+                        TextView txtVisitantesDia = (TextView) findViewById(R.id.txtVisitantesPlaceDia);
+                        txtVisitantesDia.setText(". "+ amigosMesmoDia.size() + " pessoas visitarão o local neste dia");
+
+                        TextView txtVisitantesMomento = (TextView) findViewById(R.id.txtVisitantesPlaceMomento);
+                        txtVisitantesMomento.setText(". "+ amigosMesmoMomento.size() + " pessoas visitarão o local durante a sua visita");
+
                     }
                 } else {
                     makeToast("Erro: " +  " "  + response.code() +" " +  response.message());
@@ -267,16 +284,12 @@ public class DetalheVisitaActivity extends AppCompatActivity {
 
 
             @Override
-            public void onFailure(Call<RetornoAPIVisitas> call, Throwable t) {
+            public void onFailure(Call<MatchingVisits> call, Throwable t) {
                 makeToast("Falha: " +  t.getMessage());
                 progress.setVisibility(GONE);
             }
 
         });
-    }
-
-    private boolean mesmoUsuarioPlaceData(Visita visitaAux, Visita visita, String idFacebook) {
-        return visitaAux.getPlaceId().equals(visita.getPlaceId()) && visitaAux.getIdFacebook().equals(idFacebook) && visitaAux.getDataVisita().equals(visita.getDataVisita());
     }
 
     private double configurarDadosPrevisao(RetornoCallWeather retornoCallWeather, Visita visita) {

@@ -18,10 +18,10 @@
         android:visibility="gone"
         android:id="@+id/progress" />
 
-    <ListView
+    <com.baoyz.swipemenulistview.SwipeMenuListView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:id="@+id/listVisitas">
-    </ListView>
+    </com.baoyz.swipemenulistview.SwipeMenuListView>
 
 </LinearLayout>

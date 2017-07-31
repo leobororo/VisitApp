@@ -1,4 +1,4 @@
-package com.leandrobororo.visitapp;
+package com.leandrobororo.visitapp.services;
 
 import com.leandrobororo.visitapp.model.RetornoCallWeather;
 import retrofit2.Call;

@@ -8,16 +8,15 @@ import java.io.Serializable;
 
 public class Amigo implements Serializable {
 
-    private String id;
     private String nome;
     private Visita visita;
 
     public String getId() {
-        return id;
+        return visita.getIdFacebook();
     }
 
     public void setId(String id) {
-        this.id = id;
+        visita.setIdFacebook(id);
     }
 
     public String getNome() {
@@ -34,5 +33,14 @@ public class Amigo implements Serializable {
 
     public void setVisita(Visita visita) {
         this.visita = visita;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+
+        return obj instanceof Amigo && ((Amigo) obj).getId() == visita.getIdFacebook();
     }
 }

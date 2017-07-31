@@ -5,6 +5,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.widget.ListView;
 
+import com.leandrobororo.visitapp.adapters.AdapterListAmigos;
 import com.leandrobororo.visitapp.model.Amigo;
 
 import java.util.ArrayList;

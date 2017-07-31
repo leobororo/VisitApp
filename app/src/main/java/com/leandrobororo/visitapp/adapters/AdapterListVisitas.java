@@ -1,4 +1,4 @@
-package com.leandrobororo.visitapp;
+package com.leandrobororo.visitapp.adapters;
 
 import android.view.LayoutInflater;
 import android.view.View;
@@ -7,6 +7,8 @@ import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.leandrobororo.visitapp.BaseActivity;
+import com.leandrobororo.visitapp.R;
 import com.leandrobororo.visitapp.model.Visita;
 
 import java.util.ArrayList;
