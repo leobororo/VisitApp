@@ -12,8 +12,7 @@ import java.util.*;
 public class Visita implements Serializable {
 
     private static final String TEXTO_DATE = "Visita dia %s entre %02d:%02d e %02d:%02d horas";
-    private static final String TEXTO_TIME_BOX = "Entre %02d:%02d e %02d:%02d horas";
-    private static final String DATA = "%4d-%02d-%02d";
+
     private static final String HORA = "%02d:%02d:00";
 
     @SerializedName("nome_place")
@@ -181,14 +180,6 @@ public class Visita implements Serializable {
         this.createdAt = createdAt;
     }
 
-    public String getDescricaoHorarioVisita() {
-        return String.format(Locale.getDefault() ,TEXTO_TIME_BOX,
-                horaInicioVisita,
-                minutoInicioVisita,
-                horaFimVisita,
-                minutoFimVisita);
-    }
-
     public String getDescricaoVisita() {
         return String.format(Locale.getDefault() ,TEXTO_DATE,
                 dataVisita,
@@ -196,29 +187,5 @@ public class Visita implements Serializable {
                 minutoInicioVisita,
                 horaFimVisita,
                 minutoFimVisita);
-    }
-
-    public CharSequence getDataVisitaFormatada() {
-        return dataVisita;
-    }
-
-    public String obterDiaMesAnoStringDataVisita() {
-
-        return String.format(DATA, Integer.parseInt(dataVisita.substring(6, 10)), Integer.parseInt(dataVisita.substring(3, 5)), Integer.parseInt(dataVisita.substring(0, 2)));
-    }
-
-    public String getHorarioMedioString() {
-        int mediaHora = horaFimVisita + horaInicioVisita + (minutoFimVisita + minutoInicioVisita) / 60;
-        int mediaMinutos = (minutoFimVisita + minutoInicioVisita)%60;
-
-        return String.format(HORA, mediaHora / 2, mediaMinutos / 2 + ((int)(((double)mediaHora%2) / 2 * 60)));
-    }
-
-    public String getHorarioInicio() {
-        return String.format(HORA, horaInicioVisita, minutoInicioVisita);
-    }
-
-    public String getHorarioFim() {
-        return String.format(HORA, horaFimVisita, minutoFimVisita);
     }
 }

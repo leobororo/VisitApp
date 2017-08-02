@@ -28,6 +28,7 @@ import com.leandrobororo.visitapp.model.RetornoCallWeather;
 import com.leandrobororo.visitapp.model.Visita;
 import com.leandrobororo.visitapp.services.APIBackendVisitasService;
 import com.leandrobororo.visitapp.services.APIWeatherService;
+import com.leandrobororo.visitapp.util.Util;
 import com.squareup.picasso.Picasso;
 
 import org.json.JSONArray;
@@ -84,15 +85,10 @@ public class DetalheVisitaActivity extends AppCompatActivity {
         final Visita visita = (Visita) extras.get("visita");
 
         instanciarAPIWeatherService();
-
         instanciarAPIVisitasService();
-
         configurarDadosEstaticos(visita);
-
         configurarEventosBotoes(visita);
-
         desabilitarDadosAmigosSeVisitaSemAcompanharAmigos(visita);
-
         obterPrevisaoConfigurarDadosPrevisaoTela(visita);
     }
 
@@ -293,32 +289,10 @@ public class DetalheVisitaActivity extends AppCompatActivity {
         });
     }
 
-    private void showSnackBarErro(String msg){
-        Snackbar.make(coordinatorLayout, msg, Snackbar.LENGTH_INDEFINITE)
-                .setAction("Ok", new View.OnClickListener() {
-                    @Override
-                    public void onClick(View view) {
-
-                    }
-                }).show();
-    }
-
-    private void showSnackBarUsuarioNaoAutorizado(String msg){
-        Snackbar.make(coordinatorLayout, msg, Snackbar.LENGTH_INDEFINITE)
-                .setAction("Log in", new View.OnClickListener() {
-                    @Override
-                    public void onClick(View view) {
-                        LoginManager.getInstance().logOut();
-                        Intent it = new Intent(context, MainActivity.class);
-                        startActivity(it);
-                    }
-                }).show();
-    }
-
     private double configurarDadosPrevisao(RetornoCallWeather retornoCallWeather, Visita visita) {
         String ultimoDiaPrevisao = retornoCallWeather.getList().get(retornoCallWeather.getList().size() - 1).getStringDiaMesAnoPrevisao();
-        String diaVisita = visita.obterDiaMesAnoStringDataVisita();
-        String horaMediaVisita = visita.getHorarioMedioString();
+        String diaVisita = Util.obterDiaMesAnoStringDataVisita(visita.getDataVisita());
+        String horaMediaVisita = obterHorarioMedioString(visita);
 
         TextView txtTituloPrevisao = (TextView) findViewById(R.id.txtTituloPrevisao);
         TextView txtChuva = (TextView) findViewById(R.id.txtChuva);
@@ -408,7 +382,7 @@ public class DetalheVisitaActivity extends AppCompatActivity {
 
         txtTempMinima.setText(format(Locale.FRENCH, "Mínima: %2.2f°", temperaturaMinima));
 
-        Picasso.with(context).load("http://openweathermap.org/img/w/" + icon.substring(0, 2) + getDiaOuNoite(visita.getHorarioMedioString()) + ".png").into(imagePrevisao);
+        Picasso.with(context).load("http://openweathermap.org/img/w/" + icon.substring(0, 2) + getDiaOuNoite(obterHorarioMedioString(visita)) + ".png").into(imagePrevisao);
 
         return precipitacao;
     }
@@ -427,6 +401,35 @@ public class DetalheVisitaActivity extends AppCompatActivity {
         }
 
         return bitmap;
+    }
+
+    private void showSnackBarErro(String msg){
+        Snackbar.make(coordinatorLayout, msg, Snackbar.LENGTH_INDEFINITE)
+                .setAction("Ok", new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+
+                    }
+                }).show();
+    }
+
+    private void showSnackBarUsuarioNaoAutorizado(String msg){
+        Snackbar.make(coordinatorLayout, msg, Snackbar.LENGTH_INDEFINITE)
+                .setAction("Log in", new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        LoginManager.getInstance().logOut();
+                        Intent it = new Intent(context, MainActivity.class);
+                        startActivity(it);
+                    }
+                }).show();
+    }
+
+    private String obterHorarioMedioString(Visita visita) {
+        return Util.getHorarioMedioString(visita.getHoraInicioVisita(),
+                visita.getMinutoInicioVisita(),
+                visita.getHoraFimVisita(),
+                visita.getMinutoFimVisita());
     }
 
     private String getAccessToken() {

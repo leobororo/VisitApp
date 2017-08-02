@@ -10,6 +10,8 @@ import android.widget.TextView;
 import com.leandrobororo.visitapp.AmigosActivity;
 import com.leandrobororo.visitapp.R;
 import com.leandrobororo.visitapp.model.Amigo;
+import com.leandrobororo.visitapp.model.Visita;
+import com.leandrobororo.visitapp.util.Util;
 import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
@@ -73,16 +75,21 @@ public class AdapterListAmigos extends BaseAdapter {
             holder = (ViewHolder) convertView.getTag();
         }
 
+        Visita visitaAmigo = amigoItem.getVisita();
+
         holder.txtNome.setText(amigoItem.getNome());
-        holder.txtDataAmigo.setText(amigoItem.getVisita().getDataVisitaFormatada());
-        holder.txtTimeBoxAmigo.setText(amigoItem.getVisita().getDescricaoHorarioVisita());
+        holder.txtDataAmigo.setText(visitaAmigo.getDataVisita());
+        holder.txtTimeBoxAmigo.setText(obterDescricaoHorarioVisitaAmigo(visitaAmigo));
 
         Picasso.with(activity).load("https://graph.facebook.com/" + amigoItem.getId() + "/picture?type=large").into(holder.imgPerfilAmigo);
 
         return convertView;
     }
 
-    public List<Amigo> getLista() {
-        return amigos == null ? new ArrayList<Amigo>() : amigos;
+    public String obterDescricaoHorarioVisitaAmigo(Visita visitaAmigo) {
+        return Util.getDescricaoHorarioVisita(visitaAmigo.getHoraInicioVisita(),
+                visitaAmigo.getMinutoInicioVisita(),
+                visitaAmigo.getHoraFimVisita(),
+                visitaAmigo.getMinutoFimVisita());
     }
 }

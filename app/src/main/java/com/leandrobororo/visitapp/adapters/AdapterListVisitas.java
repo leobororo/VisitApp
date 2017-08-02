@@ -10,6 +10,7 @@ import android.widget.TextView;
 import com.leandrobororo.visitapp.BaseActivity;
 import com.leandrobororo.visitapp.R;
 import com.leandrobororo.visitapp.model.Visita;
+import com.leandrobororo.visitapp.util.Util;
 
 import java.util.List;
 
@@ -72,11 +73,18 @@ public class AdapterListVisitas extends BaseAdapter {
         }
 
         holder.txtNomeGooglePlace.setText(visitaItem.getNomePlace());
-        holder.txtDataVisita.setText(visitaItem.getDataVisitaFormatada());
-        holder.txtTimeBoxVisita.setText(visitaItem.getDescricaoHorarioVisita());
+        holder.txtDataVisita.setText(visitaItem.getDataVisita());
+        holder.txtTimeBoxVisita.setText(obterDescricaoHorarioVisitaAmigo(visitaItem));
 
         activity.configurarImagem(holder.imgGooglePlace, visitaItem);
 
         return convertView;
+    }
+
+    public String obterDescricaoHorarioVisitaAmigo(Visita visitaAmigo) {
+        return Util.getDescricaoHorarioVisita(visitaAmigo.getHoraInicioVisita(),
+                visitaAmigo.getMinutoInicioVisita(),
+                visitaAmigo.getHoraFimVisita(),
+                visitaAmigo.getMinutoFimVisita());
     }
 }
