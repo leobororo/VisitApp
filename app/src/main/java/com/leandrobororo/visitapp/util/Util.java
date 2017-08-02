@@ -5,11 +5,8 @@ import android.support.annotation.NonNull;
 /**
  * Created by leandrobororo on 04/03/17.
  */
-
 public class Util {
     public static final String DESEJA_ACOMPANHAR_PLANOS_DE_VISITA_DE_AMIGOS_AO_MESMO_LOCAL = "Deseja acompanhar planos de visita de amigos ao mesmo local?";
-    public static final String OCORREU_UM_ERRO_AO_ACESSAR_O_SERVICO = "Ocorreu um erro ao acessar o serviço";
-    public static final String NAO_FOI_POSSIVEL_SALVAR_A_VISITA = "Não foi possivel salvar a visita";
     public static final String REGISTRO_CANCELADO = "Registro cancelado!";
     public static final String FORMATO_DATA = "%02d/%02d/%04d";
     public static final String HORA = "%02d:%02d:00";

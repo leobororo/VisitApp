@@ -1,6 +1,5 @@
 package com.leandrobororo.visitapp;
 
-import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -15,6 +14,7 @@ import com.facebook.Profile;
 import com.facebook.ProfileTracker;
 import com.facebook.login.LoginResult;
 import com.facebook.login.widget.LoginButton;
+import com.leandrobororo.visitapp.criptografia.EnCryptor;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -29,8 +29,6 @@ public class MainActivity extends AppCompatActivity {
         FacebookSdk.sdkInitialize(getApplicationContext());
 
         setContentView(R.layout.activity_main);
-
-
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -65,6 +63,7 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void onSuccess(LoginResult loginResult) {
+                storeAccessToken(loginResult);
 
                 if (Profile.getCurrentProfile() == null) {
                     profileTracker = new ProfileTracker() {
@@ -72,14 +71,12 @@ public class MainActivity extends AppCompatActivity {
                         @Override
                         protected void onCurrentProfileChanged(Profile profile, Profile newProfile) {
                             profileTracker.stopTracking();
-
                             redirecionaUsuarioParaBaseActitvity(newProfile);
                         }
                     };
                 } else {
                     redirecionaUsuarioParaBaseActitvity(Profile.getCurrentProfile());
                 }
-
             }
 
             @Override
@@ -94,8 +91,15 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
+    private void storeAccessToken(LoginResult loginResult) {
+        try {
+            EnCryptor.getInstance().encryptText("access_token", loginResult.getAccessToken().getToken());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
     private void makeToast(String mensagem) {
-        Toast.makeText(this, mensagem, Toast.LENGTH_SHORT)
-                .show();
+        Toast.makeText(this, mensagem, Toast.LENGTH_SHORT).show();
     }
 }

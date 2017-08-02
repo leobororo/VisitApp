@@ -18,9 +18,7 @@ import java.util.List;
 /**
  * Created by leandrobororo on 03/03/17.
  */
-
 public class AdapterListAmigos extends BaseAdapter {
-    private static final String TEXTO_TIME_BOX = "Entre %02d:%02d e %02d:%02d horas";
 
     private final AmigosActivity activity;
     private final List<Amigo> amigos;

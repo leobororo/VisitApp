@@ -1,12 +1,9 @@
 package com.leandrobororo.visitapp.model;
 
-import android.text.format.DateFormat;
-
 import com.google.gson.annotations.SerializedName;
 
 import java.io.Serializable;
 import java.util.*;
-import java.util.List;
 
 /**
  * Created by leandrobororo on 03/03/17.

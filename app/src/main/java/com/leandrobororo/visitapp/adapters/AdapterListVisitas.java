@@ -11,15 +11,12 @@ import com.leandrobororo.visitapp.BaseActivity;
 import com.leandrobororo.visitapp.R;
 import com.leandrobororo.visitapp.model.Visita;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
  * Created by leandrobororo on 03/03/17.
  */
-
 public class AdapterListVisitas extends BaseAdapter {
-    private static final String TEXTO_TIME_BOX = "Entre %02d:%02d e %02d:%02d horas";
 
     private final BaseActivity activity;
     private final List<Visita> visitas;
@@ -81,9 +78,5 @@ public class AdapterListVisitas extends BaseAdapter {
         activity.configurarImagem(holder.imgGooglePlace, visitaItem);
 
         return convertView;
-    }
-
-    public List<Visita> getLista() {
-        return visitas == null ? new ArrayList<Visita>() : visitas;
     }
 }

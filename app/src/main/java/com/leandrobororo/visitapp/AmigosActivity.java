@@ -12,9 +12,6 @@ import java.util.ArrayList;
 
 public class AmigosActivity extends AppCompatActivity {
 
-    private AdapterListAmigos adapter;
-    private ListView listAmigos;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -25,9 +22,8 @@ public class AmigosActivity extends AppCompatActivity {
         Bundle extras = getIntent().getExtras();
         ArrayList<Amigo> amigos = (ArrayList<Amigo>) extras.get("amigos");
 
-        listAmigos = (ListView) findViewById(R.id.listAmigos);
-        adapter = new AdapterListAmigos(AmigosActivity.this, amigos);
+        ListView listAmigos = (ListView) findViewById(R.id.listAmigos);
+        AdapterListAmigos adapter = new AdapterListAmigos(AmigosActivity.this, amigos);
         listAmigos.setAdapter(adapter);
     }
-
 }

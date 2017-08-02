@@ -23,7 +23,6 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.DatePicker;
 import android.widget.ImageView;
-import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.TimePicker;
 import android.widget.Toast;
@@ -46,9 +45,9 @@ import com.google.android.gms.location.places.PlacePhotoResult;
 import com.google.android.gms.location.places.Places;
 import com.google.android.gms.location.places.ui.PlacePicker;
 import com.leandrobororo.visitapp.adapters.AdapterListVisitas;
+import com.leandrobororo.visitapp.criptografia.DeCryptor;
 import com.leandrobororo.visitapp.model.Visita;
 import com.leandrobororo.visitapp.services.APIBackendVisitasService;
-import com.leandrobororo.visitapp.util.Util;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -236,7 +235,7 @@ public class BaseActivity extends AppCompatActivity {
     private void callGetVisitas() {
         progress.setVisibility(View.VISIBLE);
 
-        Call<List<Visita>> call = visitasBackendService.getVisitas(profile.getId());
+        Call<List<Visita>> call = visitasBackendService.getVisitas(profile.getId(), getAccessToken());
         call.enqueue(new Callback<List<Visita>>() {
             @Override
             public void onResponse(Call<List<Visita>> call, Response<List<Visita>> response) {
@@ -256,7 +255,11 @@ public class BaseActivity extends AppCompatActivity {
                         }
                     });
                 } else {
-                    showSnackBarTentarDeNovoGetVisitas("Erro: " +  " "  + response.code() +  " " +  response.message());
+                    if (response.code() == 401) {
+                        showSnackBarUsuarioNaoAutorizado("Erro: " + " " + response.code() + " " + response.message());
+                    } else {
+                        showSnackBarTentarDeNovoGetVisitas("Erro: " + " " + response.code() + " " + response.message());
+                    }
                 }
                 progress.setVisibility(View.GONE);
             }
@@ -271,12 +274,21 @@ public class BaseActivity extends AppCompatActivity {
         });
     }
 
+    private String getAccessToken() {
+        try {
+            return DeCryptor.getInstance().getAccessToken();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return "";
+    }
+
     private void callSalvarVisita(final Visita visita) {
         visita.setIdFacebook(profile.getId());
 
         progress.setVisibility(View.VISIBLE);
 
-        Call<ResponseBody> call = visitasBackendService.salvarVisita(visita);
+        Call<ResponseBody> call = visitasBackendService.salvarVisita(visita, visita.getIdFacebook(), getAccessToken());
         call.enqueue(new Callback<ResponseBody>() {
             @Override
             public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
@@ -284,14 +296,18 @@ public class BaseActivity extends AppCompatActivity {
                 if (response.isSuccessful()){
                     callGetVisitas();
                 } else {
-                    showSnackBarTentarDeNovoSaveVisita("Erro: " +  " "  + response.code() +  " " +  response.message(), visita);
+                    if (response.code() == 401) {
+                        showSnackBarUsuarioNaoAutorizado("Erro: " + " " + response.code() + " " + response.message());
+                    } else {
+                        showSnackBarTentarDeNovoSaveVisita("Erro: " +  " "  + response.code() +  " " +  response.message());
+                    }
                 }
             }
 
             @Override
             public void onFailure(Call<ResponseBody> call, Throwable t) {
                 progress.setVisibility(View.GONE);
-                showSnackBarTentarDeNovoSaveVisita("Falha: " + t.getMessage(), visita);
+                showSnackBarTentarDeNovoSaveVisita("Falha: " + t.getMessage());
             }
 
         });
@@ -300,15 +316,19 @@ public class BaseActivity extends AppCompatActivity {
     private void callDeleteVisita(final Visita visita) {
         progress.setVisibility(View.VISIBLE);
 
-        Call<ResponseBody> call = visitasBackendService.deleteVisita(visita.getObjectId());
+        Call<ResponseBody> call = visitasBackendService.deleteVisita(visita.getObjectId(), visita.getIdFacebook(), getAccessToken());
         call.enqueue(new Callback<ResponseBody>() {
             @Override
             public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
                 progress.setVisibility(View.GONE);
                 if (response.isSuccessful()){
                     callGetVisitas();
-                }else{
-                    showSnackBarTentarDeNovoDeleteVisita("Erro: " +  " "  + response.code() +  " " +  response.message(), visita);
+                } else {
+                    if (response.code() == 401) {
+                        showSnackBarUsuarioNaoAutorizado("Erro: " + " " + response.code() + " " + response.message());
+                    } else {
+                        showSnackBarTentarDeNovoDeleteVisita("Erro: " +  " "  + response.code() +  " " +  response.message(), visita);
+                    }
                 }
             }
 
@@ -332,12 +352,12 @@ public class BaseActivity extends AppCompatActivity {
                 }).show();
     }
 
-    private void showSnackBarTentarDeNovoSaveVisita(String msg, final Visita visita){
+    private void showSnackBarTentarDeNovoSaveVisita(String msg){
         Snackbar.make(coordinatorLayout, msg, Snackbar.LENGTH_INDEFINITE)
-                .setAction("Tentar", new View.OnClickListener() {
+                .setAction("Ok", new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
-                        callSalvarVisita(visita);
+
                     }
                 }).show();
     }
@@ -348,6 +368,18 @@ public class BaseActivity extends AppCompatActivity {
                     @Override
                     public void onClick(View view) {
                         callGetVisitas();
+                    }
+                }).show();
+    }
+
+    private void showSnackBarUsuarioNaoAutorizado(String msg){
+        Snackbar.make(coordinatorLayout, msg, Snackbar.LENGTH_INDEFINITE)
+                .setAction("Log in", new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        LoginManager.getInstance().logOut();
+                        Intent it = new Intent(context, MainActivity.class);
+                        startActivity(it);
                     }
                 }).show();
     }
@@ -549,7 +581,6 @@ public class BaseActivity extends AppCompatActivity {
     }
 
     private void makeToast(String mensagem) {
-        Toast.makeText(this, mensagem, Toast.LENGTH_SHORT)
-                .show();
+        Toast.makeText(this, mensagem, Toast.LENGTH_SHORT).show();
     }
 }

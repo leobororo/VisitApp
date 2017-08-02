@@ -6,6 +6,8 @@ import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.design.widget.CoordinatorLayout;
+import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
@@ -13,12 +15,13 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.facebook.AccessToken;
 import com.facebook.GraphRequest;
 import com.facebook.GraphResponse;
 import com.facebook.HttpMethod;
+import com.facebook.login.LoginManager;
+import com.leandrobororo.visitapp.criptografia.DeCryptor;
 import com.leandrobororo.visitapp.model.MatchingVisits;
 import com.leandrobororo.visitapp.model.Previsao;
 import com.leandrobororo.visitapp.model.RetornoCallWeather;
@@ -37,7 +40,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
@@ -61,6 +63,7 @@ import static java.lang.String.format;
 public class DetalheVisitaActivity extends AppCompatActivity {
 
     private DetalheVisitaActivity context = this;
+    private CoordinatorLayout coordinatorLayout;
     private APIWeatherService apiWeatherService;
     private APIBackendVisitasService backendService;
     private ProgressBar progress;
@@ -75,6 +78,7 @@ public class DetalheVisitaActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
 
         progress = (ProgressBar) findViewById(R.id.progressDetalhe);
+        coordinatorLayout = (CoordinatorLayout) findViewById(R.id.coordinatorLayoutDetalhe);
 
         Bundle extras = getIntent().getExtras();
         final Visita visita = (Visita) extras.get("visita");
@@ -83,8 +87,6 @@ public class DetalheVisitaActivity extends AppCompatActivity {
 
         instanciarAPIVisitasService();
 
-        resetContagemAmigosEListaAmigos();
-
         configurarDadosEstaticos(visita);
 
         configurarEventosBotoes(visita);
@@ -92,10 +94,6 @@ public class DetalheVisitaActivity extends AppCompatActivity {
         desabilitarDadosAmigosSeVisitaSemAcompanharAmigos(visita);
 
         obterPrevisaoConfigurarDadosPrevisaoTela(visita);
-    }
-
-    private void resetContagemAmigosEListaAmigos() {
-
     }
 
     @NonNull
@@ -221,13 +219,13 @@ public class DetalheVisitaActivity extends AppCompatActivity {
                         }
                     });
                 } else {
-                    makeToast("Erro: " +  " "  + response.code() +" " +  response.message());
+                    showSnackBarErro("Erro: " +  " "  + response.code() +" " +  response.message());
                 }
             }
 
             @Override
             public void onFailure(Call<RetornoCallWeather> call, Throwable t) {
-                makeToast("Falha: " +  t.getMessage());
+                showSnackBarErro("Falha: " +  t.getMessage());
             }
         });
     }
@@ -239,8 +237,7 @@ public class DetalheVisitaActivity extends AppCompatActivity {
             ids.append(entry.getKey() + ",");
         }
 
-        Call<MatchingVisits> call = backendService.getMatchingVisits(ids.toString(), visita.getPlaceId(), visita.getDataVisita(), visita.getHoraInicioVisita(), visita.getHoraFimVisita());
-
+        Call<MatchingVisits> call = backendService.getMatchingVisits(visita.getIdFacebook(), getAccessToken(), ids.toString(), visita.getPlaceId(), visita.getDataVisita(), visita.getHoraInicioVisita(), visita.getHoraFimVisita());
         call.enqueue(new Callback<MatchingVisits>() {
             @Override
             public void onResponse(Call<MatchingVisits> call, Response<MatchingVisits> response) {
@@ -276,7 +273,11 @@ public class DetalheVisitaActivity extends AppCompatActivity {
 
                     }
                 } else {
-                    makeToast("Erro: " +  " "  + response.code() +" " +  response.message());
+                    if (response.code() == 401) {
+                        showSnackBarUsuarioNaoAutorizado("Erro: " + " " + response.code() + " " + response.message());
+                    } else {
+                        showSnackBarErro("Erro: " +  " "  + response.code() +" " +  response.message());
+                    }
                 }
 
                 progress.setVisibility(GONE);
@@ -285,11 +286,33 @@ public class DetalheVisitaActivity extends AppCompatActivity {
 
             @Override
             public void onFailure(Call<MatchingVisits> call, Throwable t) {
-                makeToast("Falha: " +  t.getMessage());
+                showSnackBarErro("Falha: " +  t.getMessage());
                 progress.setVisibility(GONE);
             }
 
         });
+    }
+
+    private void showSnackBarErro(String msg){
+        Snackbar.make(coordinatorLayout, msg, Snackbar.LENGTH_INDEFINITE)
+                .setAction("Ok", new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+
+                    }
+                }).show();
+    }
+
+    private void showSnackBarUsuarioNaoAutorizado(String msg){
+        Snackbar.make(coordinatorLayout, msg, Snackbar.LENGTH_INDEFINITE)
+                .setAction("Log in", new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        LoginManager.getInstance().logOut();
+                        Intent it = new Intent(context, MainActivity.class);
+                        startActivity(it);
+                    }
+                }).show();
     }
 
     private double configurarDadosPrevisao(RetornoCallWeather retornoCallWeather, Visita visita) {
@@ -406,8 +429,12 @@ public class DetalheVisitaActivity extends AppCompatActivity {
         return bitmap;
     }
 
-    private void makeToast(String mensagem) {
-        Toast.makeText(this, mensagem, Toast.LENGTH_SHORT)
-                .show();
+    private String getAccessToken() {
+        try {
+            return DeCryptor.getInstance().getAccessToken();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return "";
     }
 }
