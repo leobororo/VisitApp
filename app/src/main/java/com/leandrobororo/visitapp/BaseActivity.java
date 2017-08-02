@@ -64,11 +64,6 @@ import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
 import static android.content.DialogInterface.BUTTON_NEGATIVE;
-import static com.leandrobororo.visitapp.util.Util.CANCELAR;
-import static com.leandrobororo.visitapp.util.Util.DESEJA_ACOMPANHAR_PLANOS_DE_VISITA_DE_AMIGOS_AO_MESMO_LOCAL;
-import static com.leandrobororo.visitapp.util.Util.NAO;
-import static com.leandrobororo.visitapp.util.Util.REGISTRO_CANCELADO;
-import static com.leandrobororo.visitapp.util.Util.SIM;
 import static com.leandrobororo.visitapp.util.Util.gerarDataVisita;
 import static java.util.Calendar.DAY_OF_MONTH;
 import static java.util.Calendar.MONTH;
@@ -96,7 +91,7 @@ public class BaseActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
 
         Bundle extras = getIntent().getExtras();
-        profile = (Profile) extras.get("profile");
+        profile = (Profile) extras.get(getString(R.string.extra_profile));
 
         obterReferenciasParaComponentesDaActivity();
 
@@ -139,7 +134,7 @@ public class BaseActivity extends AppCompatActivity {
                 openItem.setWidth(dp2px(90));
 
                 // set item title
-                openItem.setTitle("Abrir");
+                openItem.setTitle(getString(R.string.abrir));
                 openItem.setTitleSize(18);
                 openItem.setTitleColor(Color.WHITE);
 
@@ -152,7 +147,7 @@ public class BaseActivity extends AppCompatActivity {
                 deleteItem.setWidth(dp2px(90));
 
                 // set item title
-                deleteItem.setTitle("Excluir");
+                deleteItem.setTitle(getString(R.string.excluir));
                 deleteItem.setTitleSize(18);
                 deleteItem.setTitleColor(Color.WHITE);
 
@@ -169,21 +164,21 @@ public class BaseActivity extends AppCompatActivity {
                 switch (index) {
                     case 0:
                         Intent it = new Intent(context, DetalheVisitaActivity.class);
-                        it.putExtra("visita", (Visita) adapter.getItem(position));
+                        it.putExtra(getString(R.string.extra_visita), (Visita) adapter.getItem(position));
                         startActivity(it);
 
                         break;
                     case 1:
                         AlertDialog.Builder builder = new AlertDialog.Builder(context);
-                        builder.setMessage("Deseja excluir a visita ?");
+                        builder.setMessage(R.string.deseja_excluir_visita);
 
-                        builder.setPositiveButton("Sim", new DialogInterface.OnClickListener() {
+                        builder.setPositiveButton(R.string.sim, new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface arg0, int arg1) {
                                 ((BaseActivity)context).callDeleteVisita((Visita) adapter.getItem(position));
                             }
                         });
 
-                        builder.setNegativeButton("Não", null);
+                        builder.setNegativeButton(R.string.nao, null);
 
                         AlertDialog alerta = builder.create();
                         alerta.show();
@@ -198,12 +193,6 @@ public class BaseActivity extends AppCompatActivity {
 
         progress = (ProgressBar) findViewById(R.id.progress);
         coordinatorLayout = (CoordinatorLayout) findViewById(R.id.coordinatorLayout);
-    }
-
-    private int dp2px(int dp) {
-        float scale = getResources().getDisplayMetrics().density;
-        int pixels = (int) (dp * scale + 0.5f);
-        return pixels;
     }
 
     private void instanciarGoogleAPIClient() {
@@ -250,15 +239,15 @@ public class BaseActivity extends AppCompatActivity {
                         @Override
                         public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                             Intent it = new Intent(context, DetalheVisitaActivity.class);
-                            it.putExtra("visita", (Visita) parent.getItemAtPosition(position));
+                            it.putExtra(context.getString(R.string.extra_visita), (Visita) parent.getItemAtPosition(position));
                             startActivity(it);
                         }
                     });
                 } else {
                     if (response.code() == 401) {
-                        showSnackBarUsuarioNaoAutorizado("Erro: " + " " + response.code() + " " + response.message());
+                        showSnackBarUsuarioNaoAutorizado(getString(R.string.erro) + ": " + response.code() + " " + response.message());
                     } else {
-                        showSnackBarTentarDeNovoGetVisitas("Erro: " + " " + response.code() + " " + response.message());
+                        showSnackBarTentarDeNovoGetVisitas(getString(R.string.erro) + ": " + response.code() + " " + response.message());
                     }
                 }
                 progress.setVisibility(View.GONE);
@@ -267,7 +256,7 @@ public class BaseActivity extends AppCompatActivity {
 
             @Override
             public void onFailure(Call<List<Visita>> call, Throwable t) {
-                showSnackBarTentarDeNovoGetVisitas("Falha: " + t.getMessage());
+                showSnackBarTentarDeNovoGetVisitas(getString(R.string.falha) + ": " + t.getMessage());
                 progress.setVisibility(View.GONE);
             }
 
@@ -297,9 +286,9 @@ public class BaseActivity extends AppCompatActivity {
                     callGetVisitas();
                 } else {
                     if (response.code() == 401) {
-                        showSnackBarUsuarioNaoAutorizado("Erro: " + " " + response.code() + " " + response.message());
+                        showSnackBarUsuarioNaoAutorizado(getString(R.string.erro) + ": " + response.code() + " " + response.message());
                     } else {
-                        showSnackBarTentarDeNovoSaveVisita("Erro: " +  " "  + response.code() +  " " +  response.message());
+                        showSnackBarTentarDeNovoSaveVisita(getString(R.string.erro) +  ": "  + response.code() +  " " +  response.message());
                     }
                 }
             }
@@ -307,7 +296,7 @@ public class BaseActivity extends AppCompatActivity {
             @Override
             public void onFailure(Call<ResponseBody> call, Throwable t) {
                 progress.setVisibility(View.GONE);
-                showSnackBarTentarDeNovoSaveVisita("Falha: " + t.getMessage());
+                showSnackBarTentarDeNovoSaveVisita(getString(R.string.falha) + ": " + t.getMessage());
             }
 
         });
@@ -325,9 +314,9 @@ public class BaseActivity extends AppCompatActivity {
                     callGetVisitas();
                 } else {
                     if (response.code() == 401) {
-                        showSnackBarUsuarioNaoAutorizado("Erro: " + " " + response.code() + " " + response.message());
+                        showSnackBarUsuarioNaoAutorizado(getString(R.string.erro) + ": " + response.code() + " " + response.message());
                     } else {
-                        showSnackBarTentarDeNovoDeleteVisita("Erro: " +  " "  + response.code() +  " " +  response.message(), visita);
+                        showSnackBarTentarDeNovoDeleteVisita(getString(R.string.erro) +  ": "  + response.code() +  " " +  response.message(), visita);
                     }
                 }
             }
@@ -336,7 +325,7 @@ public class BaseActivity extends AppCompatActivity {
             @Override
             public void onFailure(Call<ResponseBody> call, Throwable t) {
                 progress.setVisibility(View.GONE);
-                showSnackBarTentarDeNovoDeleteVisita("Falha: " + t.getMessage(), visita);
+                showSnackBarTentarDeNovoDeleteVisita(getString(R.string.falha) + ": " + t.getMessage(), visita);
             }
 
         });
@@ -344,7 +333,7 @@ public class BaseActivity extends AppCompatActivity {
 
     private void showSnackBarTentarDeNovoDeleteVisita(String msg, final Visita visita){
         Snackbar.make(coordinatorLayout, msg, Snackbar.LENGTH_INDEFINITE)
-                .setAction("Tentar", new View.OnClickListener() {
+                .setAction(R.string.tentar, new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
                         callDeleteVisita(visita);
@@ -354,7 +343,7 @@ public class BaseActivity extends AppCompatActivity {
 
     private void showSnackBarTentarDeNovoSaveVisita(String msg){
         Snackbar.make(coordinatorLayout, msg, Snackbar.LENGTH_INDEFINITE)
-                .setAction("Ok", new View.OnClickListener() {
+                .setAction(R.string.ok, new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
 
@@ -364,7 +353,7 @@ public class BaseActivity extends AppCompatActivity {
 
     private void showSnackBarTentarDeNovoGetVisitas(String msg){
         Snackbar.make(coordinatorLayout, msg, Snackbar.LENGTH_INDEFINITE)
-                .setAction("Tentar", new View.OnClickListener() {
+                .setAction(R.string.tentar, new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
                         callGetVisitas();
@@ -374,7 +363,7 @@ public class BaseActivity extends AppCompatActivity {
 
     private void showSnackBarUsuarioNaoAutorizado(String msg){
         Snackbar.make(coordinatorLayout, msg, Snackbar.LENGTH_INDEFINITE)
-                .setAction("Log in", new View.OnClickListener() {
+                .setAction(R.string.log_in, new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
                         LoginManager.getInstance().logOut();
@@ -390,10 +379,10 @@ public class BaseActivity extends AppCompatActivity {
         try {
             startActivityForResult(builder.build(BaseActivity.this), PLACE_PICKER_REQUEST);
         } catch (GooglePlayServicesRepairableException e) {
-            makeToast("Exceção: " + e.getMessage());
+            makeToast(getString(R.string.excecao) + ": " + e.getMessage());
             e.printStackTrace();
         } catch (GooglePlayServicesNotAvailableException e) {
-            makeToast("Exceção: " + e.getMessage());
+            makeToast(getString(R.string.excecao) + ": " + e.getMessage());
             e.printStackTrace();
         }
     }
@@ -412,7 +401,7 @@ public class BaseActivity extends AppCompatActivity {
 
                 obterDataHorarioVisita(visita);
             } else {
-                makeToast(REGISTRO_CANCELADO);
+                makeToast(this.getString(R.string.registro_cancelado));
             }
         }
     }
@@ -429,7 +418,7 @@ public class BaseActivity extends AppCompatActivity {
             }
         }, hoje.get(YEAR), hoje.get(MONTH), hoje.get(DAY_OF_MONTH));
 
-        dialog.setButton(BUTTON_NEGATIVE, CANCELAR, criarDialogOnCancelListener());
+        dialog.setButton(BUTTON_NEGATIVE, this.getString(R.string.cancelar), criarDialogOnCancelListener());
 
         dialog.show();
     }
@@ -453,14 +442,14 @@ public class BaseActivity extends AppCompatActivity {
                     }
                 }, 0, 0, true);
 
-                timePickerDialog.setButton(BUTTON_NEGATIVE, CANCELAR, criarDialogOnCancelListener());
+                timePickerDialog.setButton(BUTTON_NEGATIVE, context.getString(R.string.cancelar), criarDialogOnCancelListener());
 
                 timePickerDialog.show();
 
             }
         }, 0, 0, true);
 
-        timePickerDialog.setButton(BUTTON_NEGATIVE, CANCELAR, criarDialogOnCancelListener());
+        timePickerDialog.setButton(BUTTON_NEGATIVE, context.getString(R.string.cancelar), criarDialogOnCancelListener());
 
         timePickerDialog.show();
     }
@@ -470,7 +459,7 @@ public class BaseActivity extends AppCompatActivity {
         return new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int which) {
                 if (which == BUTTON_NEGATIVE) {
-                    makeToast(REGISTRO_CANCELADO);
+                    makeToast(context.getString(R.string.registro_cancelado));
                 }
             }
         };
@@ -478,9 +467,9 @@ public class BaseActivity extends AppCompatActivity {
 
     private void configurarAcompanharVisitasAmigos(final Visita visita) {
         AlertDialog.Builder builder = new AlertDialog.Builder(BaseActivity.this);
-        builder.setMessage(DESEJA_ACOMPANHAR_PLANOS_DE_VISITA_DE_AMIGOS_AO_MESMO_LOCAL);
+        builder.setMessage(this.getString(R.string.deseja_acompanhar_amigos));
 
-        builder.setPositiveButton(SIM, new DialogInterface.OnClickListener() {
+        builder.setPositiveButton(this.getString(R.string.sim), new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface arg0, int arg1) {
                 visita.setAcompanharAmigos(true);
 
@@ -488,7 +477,7 @@ public class BaseActivity extends AppCompatActivity {
             }
         });
 
-        builder.setNegativeButton(NAO, new DialogInterface.OnClickListener() {
+        builder.setNegativeButton(this.getString(R.string.nao), new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface arg0, int arg1) {
             visita.setAcompanharAmigos(false);
 
@@ -567,6 +556,7 @@ public class BaseActivity extends AppCompatActivity {
 
     private Bitmap readBitmap(String placeId) {
         Bitmap bitmap = null;
+
         try {
             FileInputStream fis = openFileInput(placeId);
             bitmap = BitmapFactory.decodeStream(fis);
@@ -578,6 +568,12 @@ public class BaseActivity extends AppCompatActivity {
         }
 
         return bitmap;
+    }
+
+    private int dp2px(int dp) {
+        float scale = getResources().getDisplayMetrics().density;
+        int pixels = (int) (dp * scale + 0.5f);
+        return pixels;
     }
 
     private void makeToast(String mensagem) {

@@ -82,7 +82,7 @@ public class DetalheVisitaActivity extends AppCompatActivity {
         coordinatorLayout = (CoordinatorLayout) findViewById(R.id.coordinatorLayoutDetalhe);
 
         Bundle extras = getIntent().getExtras();
-        final Visita visita = (Visita) extras.get("visita");
+        final Visita visita = (Visita) extras.get(getString(R.string.extra_visita));
 
         instanciarAPIWeatherService();
         instanciarAPIVisitasService();
@@ -118,8 +118,8 @@ public class DetalheVisitaActivity extends AppCompatActivity {
                 }
 
                 Intent it = new Intent(context, AmigosActivity.class);
-                it.putExtra("amigos", amigos);
-                it.putExtra("visita", visita);
+                it.putExtra(getString(R.string.extra_amigos), amigos);
+                it.putExtra(getString(R.string.extra_visita), visita);
                 startActivity(it);
             }
         });
@@ -215,13 +215,13 @@ public class DetalheVisitaActivity extends AppCompatActivity {
                         }
                     });
                 } else {
-                    showSnackBarErro("Erro: " +  " "  + response.code() +" " +  response.message());
+                    showSnackBarErro(getString(R.string.erro) + ": " + response.code() +" " +  response.message());
                 }
             }
 
             @Override
             public void onFailure(Call<RetornoCallWeather> call, Throwable t) {
-                showSnackBarErro("Falha: " +  t.getMessage());
+                showSnackBarErro(getString(R.string.falha) + ": " +  t.getMessage());
             }
         });
     }
@@ -233,7 +233,14 @@ public class DetalheVisitaActivity extends AppCompatActivity {
             ids.append(entry.getKey() + ",");
         }
 
-        Call<MatchingVisits> call = backendService.getMatchingVisits(visita.getIdFacebook(), getAccessToken(), ids.toString(), visita.getPlaceId(), visita.getDataVisita(), visita.getHoraInicioVisita(), visita.getHoraFimVisita());
+        Call<MatchingVisits> call = backendService.getMatchingVisits(visita.getIdFacebook(),
+                getAccessToken(),
+                ids.toString(),
+                visita.getPlaceId(),
+                visita.getDataVisita(),
+                visita.getHoraInicioVisita(),
+                visita.getHoraFimVisita());
+
         call.enqueue(new Callback<MatchingVisits>() {
             @Override
             public void onResponse(Call<MatchingVisits> call, Response<MatchingVisits> response) {
@@ -270,9 +277,9 @@ public class DetalheVisitaActivity extends AppCompatActivity {
                     }
                 } else {
                     if (response.code() == 401) {
-                        showSnackBarUsuarioNaoAutorizado("Erro: " + " " + response.code() + " " + response.message());
+                        showSnackBarUsuarioNaoAutorizado(getString(R.string.erro) +  ": " + response.code() + " " + response.message());
                     } else {
-                        showSnackBarErro("Erro: " +  " "  + response.code() +" " +  response.message());
+                        showSnackBarErro(getString(R.string.erro) +  ": "  + response.code() +" " +  response.message());
                     }
                 }
 
@@ -282,7 +289,7 @@ public class DetalheVisitaActivity extends AppCompatActivity {
 
             @Override
             public void onFailure(Call<MatchingVisits> call, Throwable t) {
-                showSnackBarErro("Falha: " +  t.getMessage());
+                showSnackBarErro(getString(R.string.falha) + ": " +  t.getMessage());
                 progress.setVisibility(GONE);
             }
 
@@ -405,7 +412,7 @@ public class DetalheVisitaActivity extends AppCompatActivity {
 
     private void showSnackBarErro(String msg){
         Snackbar.make(coordinatorLayout, msg, Snackbar.LENGTH_INDEFINITE)
-                .setAction("Ok", new View.OnClickListener() {
+                .setAction(R.string.ok, new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
 
@@ -415,7 +422,7 @@ public class DetalheVisitaActivity extends AppCompatActivity {
 
     private void showSnackBarUsuarioNaoAutorizado(String msg){
         Snackbar.make(coordinatorLayout, msg, Snackbar.LENGTH_INDEFINITE)
-                .setAction("Log in", new View.OnClickListener() {
+                .setAction(R.string.log_in, new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
                         LoginManager.getInstance().logOut();

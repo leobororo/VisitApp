@@ -41,10 +41,10 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void redirecionaUsuarioParaBaseActitvity(Profile profile) {
-        makeToast("Bem-vindo ao VisitApp " + profile.getFirstName());
+        makeToast(getString(R.string.bem_vindo) + profile.getFirstName());
 
         Intent it = new Intent(this, BaseActivity.class);
-        it.putExtra("profile", profile);
+        it.putExtra(getString(R.string.extra_profile), profile);
         startActivity(it);
     }
 
@@ -81,12 +81,12 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void onCancel() {
-                makeToast("O login foi cancelado");
+                makeToast(getString(R.string.login_cancelado));
             }
 
             @Override
             public void onError(FacebookException error) {
-                makeToast("Ocorreu um erro durante a tentativa de efetuar login");
+                makeToast(getString(R.string.erro_login));
             }
         });
     }

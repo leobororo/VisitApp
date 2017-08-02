@@ -2,21 +2,17 @@ package com.leandrobororo.visitapp.util;
 
 import android.support.annotation.NonNull;
 
+import com.leandrobororo.visitapp.R;
+
 import java.util.Locale;
 
 /**
  * Created by leandrobororo on 04/03/17.
  */
 public class Util {
-    public static final String DESEJA_ACOMPANHAR_PLANOS_DE_VISITA_DE_AMIGOS_AO_MESMO_LOCAL = "Deseja acompanhar planos de visita de amigos ao mesmo local?";
-    public static final String REGISTRO_CANCELADO = "Registro cancelado!";
-    public static final String FORMATO_DATA = "%02d/%02d/%04d";
-    public static final String HORA = "%02d:%02d:00";
-    public static final String CANCELAR = "Cancelar";
-    public static final String SIM = "Sim";
-    public static final String NAO = "Não";
-
     private static final String TEXTO_TIME_BOX = "Entre %02d:%02d e %02d:%02d horas";
+    private static final String FORMATO_DATA = "%02d/%02d/%04d";
+    private static final String HORA = "%02d:%02d:00";
     private static final String DATA = "%4d-%02d-%02d";
 
     public static String getHorarioMedioString(int horaInicioVisita, int minutoInicioVisita, int horaFimVisita, int minutoFimVisita) {

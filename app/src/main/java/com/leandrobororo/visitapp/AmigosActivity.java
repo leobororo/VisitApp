@@ -20,7 +20,7 @@ public class AmigosActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
 
         Bundle extras = getIntent().getExtras();
-        ArrayList<Amigo> amigos = (ArrayList<Amigo>) extras.get("amigos");
+        ArrayList<Amigo> amigos = (ArrayList<Amigo>) extras.get(getString(R.string.extra_amigos));
 
         ListView listAmigos = (ListView) findViewById(R.id.listAmigos);
         AdapterListAmigos adapter = new AdapterListAmigos(AmigosActivity.this, amigos);
