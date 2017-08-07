@@ -10,8 +10,8 @@
     android:background="#4099FF"
     android:layout_alignParentTop="true"
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
-    tools:context="com.leandrobororo.visitapp.DetalheVisitaActivity"
-    tools:showIn="@layout/activity_detalhe_visita">
+    tools:context="com.leandrobororo.visitapp.VisitDetailActivity"
+    tools:showIn="@layout/activity_visit_detail">
 
     <ProgressBar
         android:layout_width="wrap_content"
@@ -29,7 +29,7 @@
         android:layout_marginLeft="5dp"
         android:layout_marginRight="5dp"
         android:src="@android:drawable/ic_menu_camera"
-        android:id="@+id/imgDetalheGooglePlace"/>
+        android:id="@+id/imgPlaceDetail"/>
 
     <LinearLayout
         android:id="@+id/LinearLayoutBottom"
@@ -51,7 +51,7 @@
             android:textSize="12sp"
             android:textStyle="bold"
             android:textColor="#000000"
-            android:id="@+id/txtDescricaoPlace"/>
+            android:id="@+id/txtPlaceDescriptionDetail"/>
 
         <TextView
             android:layout_width="match_parent"
@@ -61,18 +61,18 @@
             android:textSize="12sp"
             android:textStyle="bold"
             android:textColor="#000000"
-            android:id="@+id/txtEnderecoPlace"/>
+            android:id="@+id/txtPlaceAddressDetail"/>
 
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="5dp"
             android:layout_marginLeft="5dp"
-            android:text="Detalhe da visita ao google place"
+            android:text="Detalhe da visit ao google place"
             android:textSize="12sp"
             android:textStyle="bold"
             android:textColor="#000000"
-            android:id="@+id/txtHorarioVisita"/>
+            android:id="@+id/txtVisitDescriptionDetail"/>
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -92,7 +92,7 @@
                 android:text="Previsão do tempo"
                 android:textSize="12sp"
                 android:textColor="#000000"
-                android:id="@+id/txtTituloPrevisao"/>
+                android:id="@+id/txtForecastTitle"/>
 
             <LinearLayout
                 android:orientation="horizontal"
@@ -113,7 +113,7 @@
                         android:text="Parcialmente nublado"
                         android:textSize="10sp"
                         android:textColor="#000000"
-                        android:id="@+id/txtPrevisao"/>
+                        android:id="@+id/txtForecast"/>
 
                     <TextView
                         android:layout_width="match_parent"
@@ -121,7 +121,7 @@
                         android:text="Mínima: 10°"
                         android:textSize="10sp"
                         android:textColor="#000000"
-                        android:id="@+id/txtTempMinima"/>
+                        android:id="@+id/txtMinTemp"/>
 
                     <TextView
                         android:layout_width="match_parent"
@@ -129,7 +129,7 @@
                         android:text="Máxima: 25°"
                         android:textSize="10sp"
                         android:textColor="#000000"
-                        android:id="@+id/txtTempMaxima"/>
+                        android:id="@+id/txtMaxTemp"/>
 
                     <TextView
                         android:layout_width="match_parent"
@@ -137,7 +137,7 @@
                         android:text="Chuva: 60%"
                         android:textSize="10sp"
                         android:textColor="#000000"
-                        android:id="@+id/txtChuva"/>
+                        android:id="@+id/txtRain"/>
 
                 </LinearLayout>
 
@@ -149,7 +149,7 @@
                     android:layout_marginBottom="10dp"
                     android:layout_marginRight="10dp"
                     android:src="@android:drawable/ic_menu_camera"
-                    android:id="@+id/imgPrevisao"/>
+                    android:id="@+id/imgForecast"/>
 
             </LinearLayout>
 
@@ -163,17 +163,17 @@
             android:textSize="12sp"
             android:textStyle="bold"
             android:textColor="#000000"
-            android:id="@+id/txtVisitantesPlaceDia"/>
+            android:id="@+id/txtSameDayFriendsNumber"/>
 
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginLeft="5dp"
-            android:text=". 0 pessoas visitarão o local durante a sua visita"
+            android:text=". 0 pessoas visitarão o local durante a sua visit"
             android:textSize="12sp"
             android:textStyle="bold"
             android:textColor="#000000"
-            android:id="@+id/txtVisitantesPlaceMomento"/>
+            android:id="@+id/txtSameMomentFriendsNumber"/>
 
         <Button
             android:layout_height="30dp"

@@ -10,7 +10,7 @@ import static java.lang.Integer.*;
 /**
  * Created by leandrobororo on 05/03/17.
  */
-public class Previsao {
+public class Forecast {
 
     private Integer dt;
     private Main main;
@@ -62,14 +62,14 @@ public class Previsao {
         return dt_txt.substring(0, 10);
     }
 
-    public Date getDataPrevisao() {
+    public Date getForecastDateObject() {
         Calendar dataVisita = new GregorianCalendar();
         dataVisita.set(parseInt(dt_txt.substring(0, 4)), parseInt(dt_txt.substring(5, 7)), parseInt(dt_txt.substring(8, 10)));
 
         return dataVisita.getTime();
     }
 
-    public String getStringDiaMesAnoPrevisao() {
+    public String getDayMonthYearForecastString() {
         return getDt_txt().substring(0, 10);
     }
 }

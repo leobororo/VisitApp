@@ -20,7 +20,6 @@ import javax.crypto.spec.GCMParameterSpec;
 /**
  * Created by leandrobororo on 01/08/17.
  */
-
 public class DeCryptor {
     private static final String TRANSFORMATION = "AES/GCM/NoPadding";
     private static final String ANDROID_KEY_STORE = "AndroidKeyStore";
@@ -28,15 +27,6 @@ public class DeCryptor {
     private KeyStore keyStore;
 
     private static DeCryptor instance;
-
-    public static DeCryptor getInstance() throws CertificateException, NoSuchAlgorithmException, KeyStoreException,
-            IOException {
-        if (instance == null) {
-            instance = new DeCryptor();
-        }
-
-        return instance;
-    }
 
     private DeCryptor() throws CertificateException, NoSuchAlgorithmException, KeyStoreException,
             IOException {
@@ -61,18 +51,29 @@ public class DeCryptor {
         return new String(cipher.doFinal(encryptedData), "UTF-8");
     }
 
+    private SecretKey getSecretKey(final String alias) throws NoSuchAlgorithmException,
+            UnrecoverableEntryException, KeyStoreException {
+        return ((KeyStore.SecretKeyEntry) keyStore.getEntry(alias, null)).getSecretKey();
+    }
+
     public String getAccessToken() {
         String accessToken = "";
+
         try {
             accessToken = decryptData("access_token", EnCryptor.getInstance().getEncryption(), EnCryptor.getInstance().getIv());
         } catch (Exception e) {
             e.printStackTrace();
         }
+
         return accessToken;
     }
 
-    private SecretKey getSecretKey(final String alias) throws NoSuchAlgorithmException,
-            UnrecoverableEntryException, KeyStoreException {
-        return ((KeyStore.SecretKeyEntry) keyStore.getEntry(alias, null)).getSecretKey();
+    public static DeCryptor getInstance() throws CertificateException, NoSuchAlgorithmException, KeyStoreException,
+            IOException {
+        if (instance == null) {
+            instance = new DeCryptor();
+        }
+
+        return instance;
     }
 }

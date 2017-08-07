@@ -16,7 +16,7 @@ import com.facebook.login.LoginResult;
 import com.facebook.login.widget.LoginButton;
 import com.leandrobororo.visitapp.criptografia.EnCryptor;
 
-public class MainActivity extends AppCompatActivity {
+public class LoginActivity extends AppCompatActivity {
 
     private CallbackManager callbackManager;
     private ProfileTracker profileTracker;
@@ -28,22 +28,22 @@ public class MainActivity extends AppCompatActivity {
 
         FacebookSdk.sdkInitialize(getApplicationContext());
 
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.activity_login);
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
         if (Profile.getCurrentProfile() == null) {
-            esperaUsuarioLogar();
+            waitLogin();
         } else {
-            redirecionaUsuarioParaBaseActitvity(Profile.getCurrentProfile());
+            redirectToDashboardActivity(Profile.getCurrentProfile());
         }
     }
 
-    private void redirecionaUsuarioParaBaseActitvity(Profile profile) {
+    private void redirectToDashboardActivity(Profile profile) {
         makeToast(getString(R.string.bem_vindo) + profile.getFirstName());
 
-        Intent it = new Intent(this, BaseActivity.class);
+        Intent it = new Intent(this, DashboardActivity.class);
         it.putExtra(getString(R.string.extra_profile), profile);
         startActivity(it);
     }
@@ -54,7 +54,7 @@ public class MainActivity extends AppCompatActivity {
         callbackManager.onActivityResult(requestCode, resultCode, data);
     }
 
-    private void esperaUsuarioLogar() {
+    private void waitLogin() {
         loginButton = (LoginButton) findViewById(R.id.login_button);
         callbackManager = CallbackManager.Factory.create();
 
@@ -71,11 +71,11 @@ public class MainActivity extends AppCompatActivity {
                         @Override
                         protected void onCurrentProfileChanged(Profile profile, Profile newProfile) {
                             profileTracker.stopTracking();
-                            redirecionaUsuarioParaBaseActitvity(newProfile);
+                            redirectToDashboardActivity(newProfile);
                         }
                     };
                 } else {
-                    redirecionaUsuarioParaBaseActitvity(Profile.getCurrentProfile());
+                    redirectToDashboardActivity(Profile.getCurrentProfile());
                 }
             }
 

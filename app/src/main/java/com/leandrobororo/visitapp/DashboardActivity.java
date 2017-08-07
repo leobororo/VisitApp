@@ -44,10 +44,11 @@ import com.google.android.gms.location.places.PlacePhotoMetadataResult;
 import com.google.android.gms.location.places.PlacePhotoResult;
 import com.google.android.gms.location.places.Places;
 import com.google.android.gms.location.places.ui.PlacePicker;
-import com.leandrobororo.visitapp.adapters.AdapterListVisitas;
+import com.leandrobororo.visitapp.adapters.AdapterVisitList;
 import com.leandrobororo.visitapp.criptografia.DeCryptor;
-import com.leandrobororo.visitapp.model.Visita;
-import com.leandrobororo.visitapp.services.APIBackendVisitasService;
+import com.leandrobororo.visitapp.model.Visit;
+import com.leandrobororo.visitapp.services.APIBackendService;
+import com.leandrobororo.visitapp.util.Util;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -69,60 +70,58 @@ import static java.util.Calendar.DAY_OF_MONTH;
 import static java.util.Calendar.MONTH;
 import static java.util.Calendar.YEAR;
 
-public class BaseActivity extends AppCompatActivity {
+public class DashboardActivity extends AppCompatActivity {
 
     private static final int PLACE_PICKER_REQUEST = 1;
+    private static GoogleApiClient googleClient;
+
     private final Context context = this;
-    private static GoogleApiClient mGoogleApiClient;
-    private APIBackendVisitasService visitasBackendService;
-    private Profile profile;
-    private AdapterListVisitas adapter;
-    private SwipeMenuListView listVisitas;
+
+    private APIBackendService backendService;
     private CoordinatorLayout coordinatorLayout;
+    private SwipeMenuListView listView;
+    private AdapterVisitList adapter;
+    private Profile facebookProfile;
     private ProgressBar progress;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        setContentView(R.layout.activity_base);
+        setContentView(R.layout.activity_dashboard);
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
         Bundle extras = getIntent().getExtras();
-        profile = (Profile) extras.get(getString(R.string.extra_profile));
+        facebookProfile = (Profile) extras.get(getString(R.string.extra_profile));
 
-        obterReferenciasParaComponentesDaActivity();
-
-        instanciarVisitasService();
-
-        instanciarGoogleAPIClient();
-
-        adicionarEventoAoFloatButton();
-
-        callGetVisitas();
+        getComponentsReferences();
+        getServiceReference();
+        getGoogleAPIClientReference();
+        setFloatButton();
+        setVisitsListComponent();
     }
 
     @Override
     protected void onStart() {
         super.onStart();
 
-        if (mGoogleApiClient != null)
-            mGoogleApiClient.connect();
+        if (googleClient != null)
+            googleClient.connect();
     }
 
     @Override
     protected void onStop() {
         super.onStop();
 
-        if (mGoogleApiClient != null && mGoogleApiClient.isConnected()) {
-            mGoogleApiClient.disconnect();
+        if (googleClient != null && googleClient.isConnected()) {
+            googleClient.disconnect();
         }
     }
 
-    private void obterReferenciasParaComponentesDaActivity() {
-        listVisitas = (SwipeMenuListView) findViewById(R.id.listVisitas);
+    private void getComponentsReferences() {
+        listView = (SwipeMenuListView) findViewById(R.id.listVisitas);
 
         SwipeMenuCreator creator = new SwipeMenuCreator() {
 
@@ -131,7 +130,7 @@ public class BaseActivity extends AppCompatActivity {
                 // create "open" item
                 SwipeMenuItem openItem = new SwipeMenuItem(getApplicationContext());
                 openItem.setBackground(new ColorDrawable(Color.rgb(0xC9, 0xC9, 0xCE)));
-                openItem.setWidth(dp2px(90));
+                openItem.setWidth(convertFromDpToPx(90));
 
                 // set item title
                 openItem.setTitle(getString(R.string.abrir));
@@ -144,7 +143,7 @@ public class BaseActivity extends AppCompatActivity {
                 // create "delete" item
                 SwipeMenuItem deleteItem = new SwipeMenuItem(getApplicationContext());
                 deleteItem.setBackground(new ColorDrawable(Color.rgb(0xF9, 0x3F, 0x25)));
-                deleteItem.setWidth(dp2px(90));
+                deleteItem.setWidth(convertFromDpToPx(90));
 
                 // set item title
                 deleteItem.setTitle(getString(R.string.excluir));
@@ -156,15 +155,15 @@ public class BaseActivity extends AppCompatActivity {
         };
 
         // set creator
-        listVisitas.setMenuCreator(creator);
+        listView.setMenuCreator(creator);
 
-        listVisitas.setOnMenuItemClickListener(new SwipeMenuListView.OnMenuItemClickListener() {
+        listView.setOnMenuItemClickListener(new SwipeMenuListView.OnMenuItemClickListener() {
             @Override
             public boolean onMenuItemClick(final int position, SwipeMenu menu, int index) {
                 switch (index) {
                     case 0:
-                        Intent it = new Intent(context, DetalheVisitaActivity.class);
-                        it.putExtra(getString(R.string.extra_visita), (Visita) adapter.getItem(position));
+                        Intent it = new Intent(context, VisitDetailActivity.class);
+                        it.putExtra(getString(R.string.extra_visita), (Visit) adapter.getItem(position));
                         startActivity(it);
 
                         break;
@@ -174,7 +173,7 @@ public class BaseActivity extends AppCompatActivity {
 
                         builder.setPositiveButton(R.string.sim, new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface arg0, int arg1) {
-                                ((BaseActivity)context).callDeleteVisita((Visita) adapter.getItem(position));
+                                ((DashboardActivity)context).deleteVisit((Visit) adapter.getItem(position));
                             }
                         });
 
@@ -190,28 +189,27 @@ public class BaseActivity extends AppCompatActivity {
             }
         });
 
-
         progress = (ProgressBar) findViewById(R.id.progress);
         coordinatorLayout = (CoordinatorLayout) findViewById(R.id.coordinatorLayout);
     }
 
-    private void instanciarGoogleAPIClient() {
-        mGoogleApiClient = new GoogleApiClient.Builder(context)
+    private void getGoogleAPIClientReference() {
+        googleClient = new GoogleApiClient.Builder(context)
                 .addApi( Places.GEO_DATA_API )
                 .addApi( Places.PLACE_DETECTION_API )
                 .build();
     }
 
-    private void instanciarVisitasService() {
+    private void getServiceReference() {
         final Retrofit retrofit2 = new Retrofit.Builder()
-                .baseUrl(APIBackendVisitasService.BASE_URL)
+                .baseUrl(APIBackendService.BASE_URL)
                 .addConverterFactory(GsonConverterFactory.create())
                 .build();
 
-        visitasBackendService = retrofit2.create(APIBackendVisitasService.class);
+        backendService = retrofit2.create(APIBackendService.class);
     }
 
-    private void adicionarEventoAoFloatButton() {
+    private void setFloatButton() {
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -221,33 +219,33 @@ public class BaseActivity extends AppCompatActivity {
         });
     }
 
-    private void callGetVisitas() {
+    private void setVisitsListComponent() {
         progress.setVisibility(View.VISIBLE);
 
-        Call<List<Visita>> call = visitasBackendService.getVisitas(profile.getId(), getAccessToken());
-        call.enqueue(new Callback<List<Visita>>() {
+        Call<List<Visit>> call = backendService.getVisits(facebookProfile.getId(), getAccessToken());
+        call.enqueue(new Callback<List<Visit>>() {
             @Override
-            public void onResponse(Call<List<Visita>> call, Response<List<Visita>> response) {
+            public void onResponse(Call<List<Visit>> call, Response<List<Visit>> response) {
                 if (response.isSuccessful()){
 
-                    List<Visita> visitasUsuario = response.body();
+                    List<Visit> visits = response.body();
 
-                    adapter = new AdapterListVisitas(BaseActivity.this, visitasUsuario);
-                    listVisitas.setAdapter(adapter);
-                    listVisitas.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                    adapter = new AdapterVisitList(DashboardActivity.this, visits);
+                    listView.setAdapter(adapter);
+                    listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
 
                         @Override
                         public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                            Intent it = new Intent(context, DetalheVisitaActivity.class);
-                            it.putExtra(context.getString(R.string.extra_visita), (Visita) parent.getItemAtPosition(position));
+                            Intent it = new Intent(context, VisitDetailActivity.class);
+                            it.putExtra(context.getString(R.string.extra_visita), (Visit) parent.getItemAtPosition(position));
                             startActivity(it);
                         }
                     });
                 } else {
                     if (response.code() == 401) {
-                        showSnackBarUsuarioNaoAutorizado(getString(R.string.erro) + ": " + response.code() + " " + response.message());
+                        showSnackBarUserForbidden(getString(R.string.usuario_nao_autoriado));
                     } else {
-                        showSnackBarTentarDeNovoGetVisitas(getString(R.string.erro) + ": " + response.code() + " " + response.message());
+                        showSnackBarTryAgainGetVisits(getString(R.string.erro) + ": " + response.code() + " " + response.message());
                     }
                 }
                 progress.setVisibility(View.GONE);
@@ -255,8 +253,8 @@ public class BaseActivity extends AppCompatActivity {
 
 
             @Override
-            public void onFailure(Call<List<Visita>> call, Throwable t) {
-                showSnackBarTentarDeNovoGetVisitas(getString(R.string.falha) + ": " + t.getMessage());
+            public void onFailure(Call<List<Visit>> call, Throwable t) {
+                showSnackBarTryAgainGetVisits(getString(R.string.falha) + ": " + t.getMessage());
                 progress.setVisibility(View.GONE);
             }
 
@@ -272,23 +270,23 @@ public class BaseActivity extends AppCompatActivity {
         return "";
     }
 
-    private void callSalvarVisita(final Visita visita) {
-        visita.setIdFacebook(profile.getId());
+    private void saveVisit(final Visit visit) {
+        visit.setIdFacebook(facebookProfile.getId());
 
         progress.setVisibility(View.VISIBLE);
 
-        Call<ResponseBody> call = visitasBackendService.salvarVisita(visita, visita.getIdFacebook(), getAccessToken());
+        Call<ResponseBody> call = backendService.saveVisit(visit, visit.getIdFacebook(), getAccessToken());
         call.enqueue(new Callback<ResponseBody>() {
             @Override
             public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
                 progress.setVisibility(View.GONE);
                 if (response.isSuccessful()){
-                    callGetVisitas();
+                    setVisitsListComponent();
                 } else {
                     if (response.code() == 401) {
-                        showSnackBarUsuarioNaoAutorizado(getString(R.string.erro) + ": " + response.code() + " " + response.message());
+                        showSnackBarUserForbidden(getString(R.string.usuario_nao_autoriado));
                     } else {
-                        showSnackBarTentarDeNovoSaveVisita(getString(R.string.erro) +  ": "  + response.code() +  " " +  response.message());
+                        showSnackBarTryAgainSaveVisit(getString(R.string.erro) +  ": "  + response.code() +  " " +  response.message());
                     }
                 }
             }
@@ -296,27 +294,27 @@ public class BaseActivity extends AppCompatActivity {
             @Override
             public void onFailure(Call<ResponseBody> call, Throwable t) {
                 progress.setVisibility(View.GONE);
-                showSnackBarTentarDeNovoSaveVisita(getString(R.string.falha) + ": " + t.getMessage());
+                showSnackBarTryAgainSaveVisit(getString(R.string.falha) + ": " + t.getMessage());
             }
 
         });
     }
 
-    private void callDeleteVisita(final Visita visita) {
+    private void deleteVisit(final Visit visit) {
         progress.setVisibility(View.VISIBLE);
 
-        Call<ResponseBody> call = visitasBackendService.deleteVisita(visita.getObjectId(), visita.getIdFacebook(), getAccessToken());
+        Call<ResponseBody> call = backendService.deletVisit(visit.getObjectId(), visit.getIdFacebook(), getAccessToken());
         call.enqueue(new Callback<ResponseBody>() {
             @Override
             public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
                 progress.setVisibility(View.GONE);
                 if (response.isSuccessful()){
-                    callGetVisitas();
+                    setVisitsListComponent();
                 } else {
                     if (response.code() == 401) {
-                        showSnackBarUsuarioNaoAutorizado(getString(R.string.erro) + ": " + response.code() + " " + response.message());
+                        showSnackBarUserForbidden(getString(R.string.usuario_nao_autoriado));
                     } else {
-                        showSnackBarTentarDeNovoDeleteVisita(getString(R.string.erro) +  ": "  + response.code() +  " " +  response.message(), visita);
+                        showSnackBarTryAgainDeleteVisit(getString(R.string.erro) +  ": "  + response.code() +  " " +  response.message(), visit);
                     }
                 }
             }
@@ -325,23 +323,23 @@ public class BaseActivity extends AppCompatActivity {
             @Override
             public void onFailure(Call<ResponseBody> call, Throwable t) {
                 progress.setVisibility(View.GONE);
-                showSnackBarTentarDeNovoDeleteVisita(getString(R.string.falha) + ": " + t.getMessage(), visita);
+                showSnackBarTryAgainDeleteVisit(getString(R.string.falha) + ": " + t.getMessage(), visit);
             }
 
         });
     }
 
-    private void showSnackBarTentarDeNovoDeleteVisita(String msg, final Visita visita){
+    private void showSnackBarTryAgainDeleteVisit(String msg, final Visit visit){
         Snackbar.make(coordinatorLayout, msg, Snackbar.LENGTH_INDEFINITE)
                 .setAction(R.string.tentar, new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
-                        callDeleteVisita(visita);
+                        deleteVisit(visit);
                     }
                 }).show();
     }
 
-    private void showSnackBarTentarDeNovoSaveVisita(String msg){
+    private void showSnackBarTryAgainSaveVisit(String msg){
         Snackbar.make(coordinatorLayout, msg, Snackbar.LENGTH_INDEFINITE)
                 .setAction(R.string.ok, new View.OnClickListener() {
                     @Override
@@ -351,23 +349,23 @@ public class BaseActivity extends AppCompatActivity {
                 }).show();
     }
 
-    private void showSnackBarTentarDeNovoGetVisitas(String msg){
+    private void showSnackBarTryAgainGetVisits(String msg){
         Snackbar.make(coordinatorLayout, msg, Snackbar.LENGTH_INDEFINITE)
                 .setAction(R.string.tentar, new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
-                        callGetVisitas();
+                        setVisitsListComponent();
                     }
                 }).show();
     }
 
-    private void showSnackBarUsuarioNaoAutorizado(String msg){
+    private void showSnackBarUserForbidden(String msg){
         Snackbar.make(coordinatorLayout, msg, Snackbar.LENGTH_INDEFINITE)
                 .setAction(R.string.log_in, new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
                         LoginManager.getInstance().logOut();
-                        Intent it = new Intent(context, MainActivity.class);
+                        Intent it = new Intent(context, LoginActivity.class);
                         startActivity(it);
                     }
                 }).show();
@@ -377,7 +375,7 @@ public class BaseActivity extends AppCompatActivity {
         PlacePicker.IntentBuilder builder = new PlacePicker.IntentBuilder();
 
         try {
-            startActivityForResult(builder.build(BaseActivity.this), PLACE_PICKER_REQUEST);
+            startActivityForResult(builder.build(DashboardActivity.this), PLACE_PICKER_REQUEST);
         } catch (GooglePlayServicesRepairableException e) {
             makeToast(getString(R.string.excecao) + ": " + e.getMessage());
             e.printStackTrace();
@@ -392,29 +390,40 @@ public class BaseActivity extends AppCompatActivity {
             if (resultCode == RESULT_OK) {
                 Place place = PlacePicker.getPlace(getApplicationContext(), data);
 
-                Visita visita = new Visita();
-                visita.setPlaceId(place.getId());
-                visita.setNomePlace(place.getName().toString());
-                visita.setEnderecoPlace(place.getAddress().toString());
-                visita.setLatitude(place.getLatLng().latitude);
-                visita.setLongitude(place.getLatLng().longitude);
+                Visit visit = new Visit();
+                visit.setPlaceId(place.getId());
+                visit.setPlaceName(place.getName().toString());
+                visit.setPlaceAddress(place.getAddress().toString());
+                visit.setLatitude(place.getLatLng().latitude);
+                visit.setLongitude(place.getLatLng().longitude);
 
-                obterDataHorarioVisita(visita);
+                obterDataHorarioVisita(visit);
             } else {
                 makeToast(this.getString(R.string.registro_cancelado));
             }
         }
     }
 
-    private void obterDataHorarioVisita(final Visita visita) {
-        Calendar hoje = Calendar.getInstance();
+    private void obterDataHorarioVisita(final Visit visit) {
+        final Calendar hoje = Calendar.getInstance();
+        hoje.set(Calendar.HOUR, 0);
+        hoje.set(Calendar.MINUTE, 0);
 
         DatePickerDialog dialog = new DatePickerDialog(this, new DatePickerDialog.OnDateSetListener() {
 
             @Override
             public void onDateSet(DatePicker view, int year, int month, int dayOfMonth) {
-                visita.setDataVisita(gerarDataVisita(year, month + 1, dayOfMonth));
-                obterHoraInicioEHoraFimVisita(visita);
+                Calendar calendar = Calendar.getInstance();
+                calendar.set(YEAR, year);
+                calendar.set(MONTH, month);
+                calendar.set(DAY_OF_MONTH, dayOfMonth);
+
+                if (hoje.compareTo(calendar) >= 0) {
+                    makeToast(getString(R.string.data_visita_posterior));
+                } else {
+                    visit.setVisitDate(gerarDataVisita(year, month + 1, dayOfMonth));
+                    obterHoraInicioEHoraFimVisita(visit);
+                }
             }
         }, hoje.get(YEAR), hoje.get(MONTH), hoje.get(DAY_OF_MONTH));
 
@@ -423,22 +432,27 @@ public class BaseActivity extends AppCompatActivity {
         dialog.show();
     }
 
-    private void obterHoraInicioEHoraFimVisita(final Visita visita) {
-        TimePickerDialog timePickerDialog = new TimePickerDialog(BaseActivity.this, new TimePickerDialog.OnTimeSetListener() {
+    private void obterHoraInicioEHoraFimVisita(final Visit visit) {
+        TimePickerDialog timePickerDialog = new TimePickerDialog(DashboardActivity.this, new TimePickerDialog.OnTimeSetListener() {
 
             @Override
             public void onTimeSet(TimePicker view, final int horaInicio, final int minutoInicio) {
-                visita.setHoraInicioVisita(horaInicio);
-                visita.setMinutoInicioVisita(minutoInicio);
+                visit.setStartHour(horaInicio);
+                visit.setStartMinute(minutoInicio);
 
-                TimePickerDialog timePickerDialog = new TimePickerDialog(BaseActivity.this, new TimePickerDialog.OnTimeSetListener() {
+                TimePickerDialog timePickerDialog = new TimePickerDialog(DashboardActivity.this, new TimePickerDialog.OnTimeSetListener() {
 
                     @Override
                     public void onTimeSet(TimePicker view, int horaFim, int minutoFim) {
-                        visita.setHoraFimVisita(horaFim);
-                        visita.setMinutoFimVisita(minutoFim);
 
-                        configurarAcompanharVisitasAmigos(visita);
+                        if (Util.isTimeBoxValid(horaInicio, minutoInicio, horaFim, minutoFim )) {
+                            visit.setEndHour(horaFim);
+                            visit.setEndMinute(minutoFim);
+
+                            configurarAcompanharVisitasAmigos(visit);
+                        } else {
+                            makeToast(getString(R.string.hora_fim_posterior));
+                        }
                     }
                 }, 0, 0, true);
 
@@ -465,23 +479,23 @@ public class BaseActivity extends AppCompatActivity {
         };
     }
 
-    private void configurarAcompanharVisitasAmigos(final Visita visita) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(BaseActivity.this);
+    private void configurarAcompanharVisitasAmigos(final Visit visit) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(DashboardActivity.this);
         builder.setMessage(this.getString(R.string.deseja_acompanhar_amigos));
 
         builder.setPositiveButton(this.getString(R.string.sim), new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface arg0, int arg1) {
-                visita.setAcompanharAmigos(true);
+                visit.setFollowUpFriends(true);
 
-                callSalvarVisita(visita);
+                saveVisit(visit);
             }
         });
 
         builder.setNegativeButton(this.getString(R.string.nao), new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface arg0, int arg1) {
-            visita.setAcompanharAmigos(false);
+            visit.setFollowUpFriends(false);
 
-            callSalvarVisita(visita);
+            saveVisit(visit);
             }
         });
 
@@ -500,36 +514,35 @@ public class BaseActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
 
-        if (id == R.id.action_configuracoes) {
-        } else if (id == R.id.action_sair) {
+        if (id == R.id.action_sair) {
             LoginManager.getInstance().logOut();
-            Intent it = new Intent(context, MainActivity.class);
+            Intent it = new Intent(context, LoginActivity.class);
             startActivity(it);
         }
 
         return super.onOptionsItemSelected(item);
     }
 
-    private static GoogleApiClient getGoogleApiClient() {
-        return mGoogleApiClient;
+    private static GoogleApiClient getGoogleClient() {
+        return googleClient;
     }
 
-    public void configurarImagem(final ImageView imageView, final Visita visitaItem) {
-        Bitmap bitmap = readBitmap(visitaItem.getPlaceId());
+    public void configurarImagem(final ImageView imageView, final Visit visitItem) {
+        Bitmap bitmap = readBitmap(visitItem.getPlaceId());
 
         if (bitmap == null) {
-            Places.GeoDataApi.getPlacePhotos(getGoogleApiClient(), visitaItem.getPlaceId()).setResultCallback(new ResultCallback<PlacePhotoMetadataResult>() {
+            Places.GeoDataApi.getPlacePhotos(getGoogleClient(), visitItem.getPlaceId()).setResultCallback(new ResultCallback<PlacePhotoMetadataResult>() {
                 @Override
                 public void onResult(@NonNull PlacePhotoMetadataResult placePhotoMetadataResult) {
 
                     if (placePhotoMetadataResult != null && placePhotoMetadataResult.getStatus().isSuccess()) {
                         PlacePhotoMetadataBuffer photoMetadata = placePhotoMetadataResult.getPhotoMetadata();
                         final PlacePhotoMetadata placePhotoMetadata = photoMetadata.get(0);
-                        placePhotoMetadata.getPhoto(getGoogleApiClient()).setResultCallback(new ResultCallback<PlacePhotoResult>() {
+                        placePhotoMetadata.getPhoto(getGoogleClient()).setResultCallback(new ResultCallback<PlacePhotoResult>() {
                                                                                                 @Override
                                                                                                 public void onResult(@NonNull PlacePhotoResult placePhotoResult) {
                                                                                                     Bitmap bitmap = placePhotoResult.getBitmap();
-                                                                                                    salvarBitmap(bitmap, visitaItem.getPlaceId());
+                                                                                                    saveBitmap(bitmap, visitItem.getPlaceId());
                                                                                                     imageView.setImageBitmap(bitmap);
                                                                                                 }
                                                                                             }
@@ -543,7 +556,7 @@ public class BaseActivity extends AppCompatActivity {
         }
     }
 
-    private void salvarBitmap(Bitmap bitmap, String placeId) {
+    private void saveBitmap(Bitmap bitmap, String placeId) {
         try {
             FileOutputStream outputStream = openFileOutput(placeId, Context.MODE_PRIVATE);
             bitmap.compress(Bitmap.CompressFormat.PNG, 85, outputStream);
@@ -570,7 +583,7 @@ public class BaseActivity extends AppCompatActivity {
         return bitmap;
     }
 
-    private int dp2px(int dp) {
+    private int convertFromDpToPx(int dp) {
         float scale = getResources().getDisplayMetrics().density;
         int pixels = (int) (dp * scale + 0.5f);
         return pixels;

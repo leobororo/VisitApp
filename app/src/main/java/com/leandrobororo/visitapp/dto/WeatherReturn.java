@@ -1,4 +1,6 @@
-package com.leandrobororo.visitapp.model;
+package com.leandrobororo.visitapp.dto;
+
+import com.leandrobororo.visitapp.model.Forecast;
 
 import java.util.List;
 
@@ -6,12 +8,12 @@ import java.util.List;
  * Created by leandrobororo on 05/03/17.
  */
 
-public class RetornoCallWeather {
+public class WeatherReturn {
 
     private String cod;
     private Double message;
     private Integer cnt;
-    private List<Previsao> list = null;
+    private List<Forecast> list = null;
 
     public String getCod() {
         return cod;
@@ -37,11 +39,11 @@ public class RetornoCallWeather {
         this.cnt = cnt;
     }
 
-    public List<Previsao> getList() {
+    public List<Forecast> getList() {
         return list;
     }
 
-    public void setList(List<Previsao> previsao) {
-        this.list = previsao;
+    public void setList(List<Forecast> forecast) {
+        this.list = forecast;
     }
 }

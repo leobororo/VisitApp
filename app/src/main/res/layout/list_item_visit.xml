@@ -19,21 +19,21 @@
             android:layout_height="wrap_content"
             android:textSize="16sp"
             android:textStyle="bold"
-            android:text="Maria da Silva"
-            android:id="@+id/txtNome"/>
+            android:text="Restaurante Casa dos Contos"
+            android:id="@+id/txtPlace"/>
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textStyle="bold"
             android:text="Visita dia 20/04/2017"
-            android:id="@+id/txtDataAmigo"/>
+            android:id="@+id/txtVisitDate"/>
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Entre 14:00 e 16:00 horas"
-            android:id="@+id/txtTimeBoxAmigo"/>
+            android:id="@+id/txtVisitTimeBox"/>
     </LinearLayout>
 
     <ImageView
@@ -42,6 +42,6 @@
         android:layout_gravity="center_vertical"
         android:src="@android:drawable/ic_menu_camera"
         android:padding="0dp"
-        android:id="@+id/imgPerfilAmigo"/>
+        android:id="@+id/imgVisitPlace"/>
 
 </LinearLayout>

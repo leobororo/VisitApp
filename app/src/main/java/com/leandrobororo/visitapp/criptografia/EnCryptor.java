@@ -44,20 +44,6 @@ public class EnCryptor {
         return instance;
     }
 
-    public byte[] encryptText(final String alias, final String textToEncrypt)
-            throws UnrecoverableEntryException, NoSuchAlgorithmException, KeyStoreException,
-            NoSuchProviderException, NoSuchPaddingException, InvalidKeyException, IOException,
-            InvalidAlgorithmParameterException, SignatureException, BadPaddingException,
-            IllegalBlockSizeException {
-
-        final Cipher cipher = Cipher.getInstance(TRANSFORMATION);
-        cipher.init(Cipher.ENCRYPT_MODE, getSecretKey(alias));
-
-        iv = cipher.getIV();
-
-        return (encryption = cipher.doFinal(textToEncrypt.getBytes("UTF-8")));
-    }
-
     @NonNull
     private SecretKey getSecretKey(final String alias) throws NoSuchAlgorithmException,
             NoSuchProviderException, InvalidAlgorithmParameterException {
@@ -80,5 +66,20 @@ public class EnCryptor {
 
     public byte[] getIv() {
         return iv;
+    }
+
+
+    public byte[] encryptText(final String alias, final String textToEncrypt)
+            throws UnrecoverableEntryException, NoSuchAlgorithmException, KeyStoreException,
+            NoSuchProviderException, NoSuchPaddingException, InvalidKeyException, IOException,
+            InvalidAlgorithmParameterException, SignatureException, BadPaddingException,
+            IllegalBlockSizeException {
+
+        final Cipher cipher = Cipher.getInstance(TRANSFORMATION);
+        cipher.init(Cipher.ENCRYPT_MODE, getSecretKey(alias));
+
+        iv = cipher.getIV();
+
+        return (encryption = cipher.doFinal(textToEncrypt.getBytes("UTF-8")));
     }
 }

@@ -8,8 +8,8 @@
     android:padding="5dp"
     android:orientation="vertical"
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
-    tools:context="com.leandrobororo.visitapp.BaseActivity"
-    tools:showIn="@layout/activity_base">
+    tools:context="com.leandrobororo.visitapp.DashboardActivity"
+    tools:showIn="@layout/activity_dashboard">
 
     <ProgressBar
         android:layout_width="wrap_content"

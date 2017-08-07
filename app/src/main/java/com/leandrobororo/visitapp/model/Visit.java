@@ -8,18 +8,15 @@ import java.util.*;
 /**
  * Created by leandrobororo on 03/03/17.
  */
-
-public class Visita implements Serializable {
+public class Visit implements Serializable {
 
     private static final String TEXTO_DATE = "Visita dia %s entre %02d:%02d e %02d:%02d horas";
 
-    private static final String HORA = "%02d:%02d:00";
-
     @SerializedName("nome_place")
-    private String nomePlace;
+    private String placeName;
 
     @SerializedName("endereco_place")
-    private String enderecoPlace;
+    private String placeAddress;
 
     @SerializedName("id_place")
     private String placeId;
@@ -31,22 +28,22 @@ public class Visita implements Serializable {
     private double longitude;
 
     @SerializedName("data_visita")
-    private String dataVisita;
+    private String visitDate;
 
     @SerializedName("hora_inicio")
-    private int horaInicioVisita;
+    private int startHour;
 
     @SerializedName("minuto_inicio")
-    private int minutoInicioVisita;
+    private int startMinute;
 
     @SerializedName("hora_fim")
-    private int horaFimVisita;
+    private int endHour;
 
     @SerializedName("minuto_fim")
-    private int minutoFimVisita;
+    private int endMinute;
 
     @SerializedName("acompanhar_amigos")
-    private boolean acompanharAmigos;
+    private boolean followUpFriends;
 
     @SerializedName("id_facebook")
     private String idFacebook;
@@ -68,12 +65,12 @@ public class Visita implements Serializable {
         this.placeId = placeId;
     }
 
-    public String getNomePlace() {
-        return nomePlace;
+    public String getPlaceName() {
+        return placeName;
     }
 
-    public void setNomePlace(String nomePlace) {
-        this.nomePlace = nomePlace;
+    public void setPlaceName(String placeName) {
+        this.placeName = placeName;
     }
 
     public double getLatitude() {
@@ -92,52 +89,52 @@ public class Visita implements Serializable {
         this.longitude = longitude;
     }
 
-    public String getDataVisita() {
-        return dataVisita;
+    public String getVisitDate() {
+        return visitDate;
     }
 
-    public void setDataVisita(String dataVisita) {
-        this.dataVisita = dataVisita;
+    public void setVisitDate(String visitDate) {
+        this.visitDate = visitDate;
     }
 
-    public int getHoraInicioVisita() {
-        return horaInicioVisita;
+    public int getStartHour() {
+        return startHour;
     }
 
-    public void setHoraInicioVisita(int horaInicioVisita) {
-        this.horaInicioVisita = horaInicioVisita;
+    public void setStartHour(int startHour) {
+        this.startHour = startHour;
     }
 
-    public int getMinutoInicioVisita() {
-        return minutoInicioVisita;
+    public int getStartMinute() {
+        return startMinute;
     }
 
-    public void setMinutoInicioVisita(int minutoInicioVisita) {
-        this.minutoInicioVisita = minutoInicioVisita;
+    public void setStartMinute(int startMinute) {
+        this.startMinute = startMinute;
     }
 
-    public int getHoraFimVisita() {
-        return horaFimVisita;
+    public int getEndHour() {
+        return endHour;
     }
 
-    public void setHoraFimVisita(int horaFimVisita) {
-        this.horaFimVisita = horaFimVisita;
+    public void setEndHour(int endHour) {
+        this.endHour = endHour;
     }
 
-    public int getMinutoFimVisita() {
-        return minutoFimVisita;
+    public int getEndMinute() {
+        return endMinute;
     }
 
-    public void setMinutoFimVisita(int minutoFimVisita) {
-        this.minutoFimVisita = minutoFimVisita;
+    public void setEndMinute(int endMinute) {
+        this.endMinute = endMinute;
     }
 
-    public boolean isAcompanharAmigos() {
-        return acompanharAmigos;
+    public boolean isFollowUpFriends() {
+        return followUpFriends;
     }
 
-    public void setAcompanharAmigos(boolean acompanharAmigos) {
-        this.acompanharAmigos = acompanharAmigos;
+    public void setFollowUpFriends(boolean followUpFriends) {
+        this.followUpFriends = followUpFriends;
     }
 
     public String getIdFacebook() {
@@ -148,12 +145,12 @@ public class Visita implements Serializable {
         this.idFacebook = idFacebook;
     }
 
-    public String getEnderecoPlace() {
-        return enderecoPlace;
+    public String getPlaceAddress() {
+        return placeAddress;
     }
 
-    public void setEnderecoPlace(String enderecoPlace) {
-        this.enderecoPlace = enderecoPlace;
+    public void setPlaceAddress(String placeAddress) {
+        this.placeAddress = placeAddress;
     }
 
     public String getObjectId() {
@@ -182,10 +179,10 @@ public class Visita implements Serializable {
 
     public String getDescricaoVisita() {
         return String.format(Locale.getDefault() ,TEXTO_DATE,
-                dataVisita,
-                horaInicioVisita,
-                minutoInicioVisita,
-                horaFimVisita,
-                minutoFimVisita);
+                visitDate,
+                startHour,
+                startMinute,
+                endHour,
+                endMinute);
     }
 }

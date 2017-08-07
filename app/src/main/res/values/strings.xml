@@ -6,8 +6,8 @@
     <string name="title_activity_amigos">VisitApp</string>
     <string name="action_configuracoes">Configurações</string>
     <string name="action_sair">Sair</string>
-    <string name="data_da_visita">Data da visita:</string>
-    <string name="deseja_acompanhar_amigos">Deseja acompanhar planos de visita de amigos ao mesmo local?</string>
+    <string name="data_da_visita">Data da visit:</string>
+    <string name="deseja_acompanhar_amigos">Deseja acompanhar planos de visit de friends ao mesmo local?</string>
     <string name="registro_cancelado">Registro cancelado!</string>
     <string name="cancelar">Cancelar</string>
     <string name="sim">Sim</string>
@@ -15,16 +15,19 @@
     <string name="extra_profile">profile</string>
     <string name="abrir">Abrir</string>
     <string name="excluir">Excluir</string>
-    <string name="extra_visita">visita</string>
-    <string name="deseja_excluir_visita">Deseja excluir a visita ?</string>
+    <string name="extra_visita">visit</string>
+    <string name="deseja_excluir_visita">Deseja excluir a visit ?</string>
     <string name="tentar">Tentar</string>
     <string name="erro">Erro</string>
     <string name="falha">Falha</string>
     <string name="log_in">Log in</string>
-    <string name="extra_amigos">amigos</string>
+    <string name="extra_amigos">friends</string>
     <string name="ok">Ok</string>
     <string name="excecao">Exceção</string>
     <string name="login_cancelado">O login foi cancelado</string>
     <string name="erro_login">Ocorreu um erro durante a tentativa de efetuar login</string>
     <string name="bem_vindo">"Bem-vindo ao VisitApp "</string>
+    <string name="usuario_nao_autoriado">Usuário não autorizado</string>
+    <string name="data_visita_posterior">A data da visit deve ser posterior à data atual</string>
+    <string name="hora_fim_posterior">O horário final da visit deve ser posterior ao horário inicial</string>
 </resources>
