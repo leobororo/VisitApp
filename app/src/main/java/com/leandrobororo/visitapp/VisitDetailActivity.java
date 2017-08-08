@@ -70,6 +70,7 @@ public class VisitDetailActivity extends AppCompatActivity {
     private CoordinatorLayout coordinatorLayout;
     private ProgressBar progress;
     private Set<Friend> sameDayFriends;
+    private Visit visit;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -83,18 +84,18 @@ public class VisitDetailActivity extends AppCompatActivity {
         coordinatorLayout = (CoordinatorLayout) findViewById(R.id.coordinatorLayoutDetalhe);
 
         Bundle extras = getIntent().getExtras();
-        final Visit visit = (Visit) extras.get(getString(R.string.extra_visita));
+        visit = (Visit) extras.get(getString(R.string.extra_visita));
 
         getWeatherServiceReference();
         getVisitsServiceReference();
-        setStats(visit);
-        setButtons(visit);
-        enableDisableFriendsDataComponents(visit);
-        obtainForecastDataAndConfigComponents(visit);
+        setStats();
+        setButtons();
+        enableDisableFriendsDataComponents();
+        obtainForecastDataAndConfigComponents();
     }
 
     @NonNull
-    private void setButtons(final Visit visit) {
+    private void setButtons() {
         Button buttonEstacionamentos = (Button) findViewById(R.id.buttonEstacionamento);
         buttonEstacionamentos.setOnClickListener(new Button.OnClickListener() {
 
@@ -126,7 +127,7 @@ public class VisitDetailActivity extends AppCompatActivity {
         });
     }
 
-    private void setStats(Visit visit) {
+    private void setStats() {
         ImageView imagePlace = (ImageView) findViewById(R.id.imgPlaceDetail);
         imagePlace.setImageBitmap(readBitmap(visit.getPlaceId()));
 
@@ -158,7 +159,7 @@ public class VisitDetailActivity extends AppCompatActivity {
         weatherService = retrofit.create(APIWeatherService.class);
     }
 
-    private void enableDisableFriendsDataComponents(Visit visit) {
+    private void enableDisableFriendsDataComponents() {
         if (!visit.isFollowUpFriends()) {
             findViewById(R.id.buttonAmigos).setVisibility(GONE);
             findViewById(R.id.txtSameDayFriendsNumber).setVisibility(GONE);
@@ -166,7 +167,7 @@ public class VisitDetailActivity extends AppCompatActivity {
         }
     }
 
-    private void obtainFriendsDataAndConfigComponents(final Visit visit) {
+    private void obtainFriendsDataAndConfigComponents() {
         new GraphRequest(
                 AccessToken.getCurrentAccessToken(),
                 "/me/friends",
@@ -183,7 +184,7 @@ public class VisitDetailActivity extends AppCompatActivity {
                                 mapIdName.put((String)amigo.get("id"), (String)amigo.get("name"));
                             }
 
-                            configFriendsDataComponents(mapIdName, visit);
+                            configFriendsDataComponents(mapIdName);
 
                             if (jsonArray.length() == 0) {
                                 progress.setVisibility(GONE);
@@ -196,7 +197,7 @@ public class VisitDetailActivity extends AppCompatActivity {
         ).executeAsync();
     }
 
-    private void obtainForecastDataAndConfigComponents(final Visit visit) {
+    private void obtainForecastDataAndConfigComponents() {
         progress.setVisibility(View.VISIBLE);
 
         Call<WeatherReturn> call = weatherService.getForecast(visit.getLatitude(), visit.getLongitude());
@@ -210,9 +211,9 @@ public class VisitDetailActivity extends AppCompatActivity {
                     runOnUiThread(new Runnable()
                     {
                         public void run() {
-                            configForecastDataComponents(WeatherReturn, visit);
+                            configForecastDataComponents(WeatherReturn);
 
-                            obtainFriendsDataAndConfigComponents(visit);
+                            obtainFriendsDataAndConfigComponents();
                         }
                     });
                 } else {
@@ -227,7 +228,7 @@ public class VisitDetailActivity extends AppCompatActivity {
         });
     }
 
-    private void configFriendsDataComponents(final Map<String, String> mapIdName, final Visit visit) {
+    private void configFriendsDataComponents(final Map<String, String> mapIdName) {
 
         Call<MatchingVisitsReturn> call = backendService.getMatchingVisits(visit.getIdFacebook(),
                 getAccessToken(),
@@ -292,8 +293,8 @@ public class VisitDetailActivity extends AppCompatActivity {
         });
     }
 
-    private double configForecastDataComponents(WeatherReturn weatherReturn, Visit visit) {
-        ForecastData forecastData = obtainForecastData(weatherReturn, visit);
+    private double configForecastDataComponents(WeatherReturn weatherReturn) {
+        ForecastData forecastData = obtainForecastData(weatherReturn);
 
         TextView txtForecastTitle = (TextView) findViewById(R.id.txtForecastTitle);
         TextView txtRain = (TextView) findViewById(R.id.txtRain);
@@ -326,7 +327,7 @@ public class VisitDetailActivity extends AppCompatActivity {
         return ids.toString();
     }
 
-    private ForecastData obtainForecastData(WeatherReturn weatherReturn, Visit visit) {
+    private ForecastData obtainForecastData(WeatherReturn weatherReturn) {
         String lastForecastDay = weatherReturn.getList().get(weatherReturn.getList().size() - 1).getDayMonthYearForecastString();
         String formatedVisitDay = Util.formatDateToCalculate(visit.getVisitDate());
         String formatedVisitTimeMean = startTimeEndTimeMeanToCalculate(visit);
